@@ -1,0 +1,101 @@
+directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+
+input RegisterInput {
+  name: String!
+  phoneNumber: String!
+  email: String!
+  licenseID: String!
+  address: String!
+  membershipNumber: Int
+  password: String!
+  role: CustomerRole
+}
+
+input UpdateCustomerInput {
+  name: String
+  phoneNumber: String
+  email: String
+  licenseID: String
+  address: String
+  membershipNumber: Int
+  isActive: Boolean
+  role: CustomerRole
+}
+
+input LoginInput{
+  email:String!
+  password:String!
+}
+
+"""
+Define a Relay Cursor type:
+https://relay.dev/graphql/connections.htm#sec-Cursor
+"""
+scalar Cursor
+type Customer implements Node {
+  id: ID!
+  name: String!
+  phoneNumber: String!
+  email: String!
+  licenseID: String!
+  address: String!
+  membershipNumber: Int!
+  isActive: Boolean!
+  password: String!
+  createAt: Time!
+  updateAt: Time!
+  role: CustomerRole!
+}
+"""CustomerRole is enum for the field role"""
+enum CustomerRole @goModel(model: "customer/ent/customer.Role") {
+  SUBSCRIBER
+  ADMIN
+}
+"""
+An object with an ID.
+Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
+"""
+interface Node @goModel(model: "customer/ent.Noder") {
+  """The id of the object."""
+  id: ID!
+}
+"""Possible directions in which to order a list of items when provided an `orderBy` argument."""
+enum OrderDirection {
+  """Specifies an ascending order for a given `orderBy` argument."""
+  ASC
+  """Specifies a descending order for a given `orderBy` argument."""
+  DESC
+}
+"""
+Information about pagination in a connection.
+https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
+"""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+  """When paginating backwards, the cursor to continue."""
+  startCursor: Cursor
+  """When paginating forwards, the cursor to continue."""
+  endCursor: Cursor
+}
+
+#Token
+type JWT{
+  token: String!
+  tokenType: String!
+}
+type Query {
+  customers: [Customer!]!
+}
+
+type Mutation{
+  register(input: RegisterInput!):JWT!
+  login(input: LoginInput!):JWT!
+}
+"""The builtin Time type"""
+scalar Time
+
