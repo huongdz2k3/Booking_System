@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package entpb;
+
+option go_package = "github.com/rotemtam/ent-grpc-example/ent/proto/entpb";
+import "google/protobuf/timestamp.proto";
+
+import "google/protobuf/empty.proto";
+
+
+message Customer {
+  int64 id = 1;
+
+  string name = 2;
+
+  string phone_number = 3;
+
+  string email = 4;
+
+  string license_id = 5;
+
+  string address = 6;
+
+  int64 membership_number = 7;
+
+  bool is_active = 8;
+
+  string password = 9;
+
+  google.protobuf.Timestamp create_at = 10;
+
+  google.protobuf.Timestamp update_at = 11;
+
+  string role = 12;
+}
+
+
+service CustomerService {
+  rpc Register ( google.protobuf.Empty ) returns ( Customer );
+  rpc Login (google.protobuf.Empty) returns (Customer);
+}
