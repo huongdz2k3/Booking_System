@@ -2,9 +2,11 @@
 
 package ent
 
-import (
-	"customer/ent/customer"
-)
+type ChangePasswordInput struct {
+	OldPassword     string `json:"oldPassword"`
+	NewPassword     string `json:"newPassword"`
+	ConfirmPassword string `json:"confirmPassword"`
+}
 
 type Jwt struct {
 	Token     string `json:"token"`
@@ -17,12 +19,11 @@ type LoginInput struct {
 }
 
 type RegisterInput struct {
-	Name             string         `json:"name"`
-	PhoneNumber      string         `json:"phoneNumber"`
-	Email            string         `json:"email"`
-	LicenseID        string         `json:"licenseID"`
-	Address          string         `json:"address"`
-	MembershipNumber *int           `json:"membershipNumber,omitempty"`
-	Password         string         `json:"password"`
-	Role             *customer.Role `json:"role,omitempty"`
+	Name             string `json:"name"`
+	PhoneNumber      string `json:"phoneNumber"`
+	Email            string `json:"email"`
+	LicenseID        string `json:"licenseID"`
+	Address          string `json:"address"`
+	MembershipNumber *int   `json:"membershipNumber,omitempty"`
+	Password         string `json:"password"`
 }

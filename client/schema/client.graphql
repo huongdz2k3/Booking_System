@@ -1,6 +1,7 @@
 directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-
+directive @auth on FIELD_DEFINITION
+directive @hasRole(roles: [CustomerRole!]) on FIELD_DEFINITION
 
 input RegisterInput {
   name: String!
@@ -10,7 +11,6 @@ input RegisterInput {
   address: String!
   membershipNumber: Int
   password: String!
-  role: CustomerRole
 }
 
 input UpdateCustomerInput {
@@ -20,13 +20,17 @@ input UpdateCustomerInput {
   licenseID: String
   address: String
   membershipNumber: Int
-  isActive: Boolean
-  role: CustomerRole
 }
 
 input LoginInput{
   email:String!
   password:String!
+}
+
+input ChangePasswordInput{
+  oldPassword:String!
+  newPassword:String!
+  confirmPassword:String!
 }
 
 """
@@ -42,10 +46,6 @@ type Customer implements Node {
   licenseID: String!
   address: String!
   membershipNumber: Int!
-  isActive: Boolean!
-  password: String!
-  createAt: Time!
-  updateAt: Time!
   role: CustomerRole!
 }
 """CustomerRole is enum for the field role"""
@@ -93,8 +93,11 @@ type Query {
 }
 
 type Mutation{
-  register(input: RegisterInput!):JWT!
-  login(input: LoginInput!):JWT!
+  Register(input: RegisterInput!):JWT!
+  Login(input: LoginInput!):JWT!
+  Update(id:ID! , input: UpdateCustomerInput!):Customer! @auth @hasRole(roles:SUBSCRIBER)
+  ChangePassword(id:ID! ,input: ChangePasswordInput!):String! @auth @hasRole(roles:SUBSCRIBER)
+  UpdateRole(id:ID!,input:CustomerRole!):Customer! @auth @hasRole(roles:ADMIN)
 }
 """The builtin Time type"""
 scalar Time

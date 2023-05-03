@@ -474,6 +474,16 @@ func MembershipNumberLTE(v int) predicate.Customer {
 	return predicate.Customer(sql.FieldLTE(FieldMembershipNumber, v))
 }
 
+// MembershipNumberIsNil applies the IsNil predicate on the "membership_number" field.
+func MembershipNumberIsNil() predicate.Customer {
+	return predicate.Customer(sql.FieldIsNull(FieldMembershipNumber))
+}
+
+// MembershipNumberNotNil applies the NotNil predicate on the "membership_number" field.
+func MembershipNumberNotNil() predicate.Customer {
+	return predicate.Customer(sql.FieldNotNull(FieldMembershipNumber))
+}
+
 // IsActiveEQ applies the EQ predicate on the "is_active" field.
 func IsActiveEQ(v bool) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldIsActive, v))

@@ -6,7 +6,9 @@ require (
 	entgo.io/contrib v0.4.4
 	entgo.io/ent v0.12.2
 	github.com/99designs/gqlgen v0.17.30
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.5.1
@@ -15,6 +17,8 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.1.0
+	google.golang.org/grpc v1.52.3
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
@@ -24,7 +28,6 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
@@ -68,7 +71,7 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

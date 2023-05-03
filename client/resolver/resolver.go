@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	directives "customer/directive"
 	"customer/ent"
 	generated "customer/graphql"
 	"github.com/99designs/gqlgen/graphql"
@@ -13,7 +14,10 @@ import (
 type Resolver struct{ client *ent.Client }
 
 func NewSchema(client *ent.Client) graphql.ExecutableSchema {
-	return generated.NewExecutableSchema(generated.Config{
+	c := generated.Config{
 		Resolvers: &Resolver{client},
-	})
+	}
+	c.Directives.Auth = directives.Auth
+	c.Directives.HasRole = directives.HasRole
+	return generated.NewExecutableSchema(c)
 }

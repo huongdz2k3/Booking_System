@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
@@ -44,22 +43,20 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	Auth    func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	HasRole func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []customer.Role) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
 	Customer struct {
 		Address          func(childComplexity int) int
-		CreateAt         func(childComplexity int) int
 		Email            func(childComplexity int) int
 		ID               func(childComplexity int) int
-		IsActive         func(childComplexity int) int
 		LicenseID        func(childComplexity int) int
 		MembershipNumber func(childComplexity int) int
 		Name             func(childComplexity int) int
-		Password         func(childComplexity int) int
 		PhoneNumber      func(childComplexity int) int
 		Role             func(childComplexity int) int
-		UpdateAt         func(childComplexity int) int
 	}
 
 	JWT struct {
@@ -68,8 +65,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login    func(childComplexity int, input ent.LoginInput) int
-		Register func(childComplexity int, input ent.RegisterInput) int
+		ChangePassword func(childComplexity int, id string, input ent.ChangePasswordInput) int
+		Login          func(childComplexity int, input ent.LoginInput) int
+		Register       func(childComplexity int, input ent.RegisterInput) int
+		Update         func(childComplexity int, id string, input ent.UpdateCustomerInput) int
+		UpdateRole     func(childComplexity int, id string, input customer.Role) int
 	}
 
 	PageInfo struct {
@@ -87,6 +87,9 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Register(ctx context.Context, input ent.RegisterInput) (*ent.Jwt, error)
 	Login(ctx context.Context, input ent.LoginInput) (*ent.Jwt, error)
+	Update(ctx context.Context, id string, input ent.UpdateCustomerInput) (*ent.Customer, error)
+	ChangePassword(ctx context.Context, id string, input ent.ChangePasswordInput) (string, error)
+	UpdateRole(ctx context.Context, id string, input customer.Role) (*ent.Customer, error)
 }
 type QueryResolver interface {
 	Customers(ctx context.Context) ([]*ent.Customer, error)
@@ -114,13 +117,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Customer.Address(childComplexity), true
 
-	case "Customer.createAt":
-		if e.complexity.Customer.CreateAt == nil {
-			break
-		}
-
-		return e.complexity.Customer.CreateAt(childComplexity), true
-
 	case "Customer.email":
 		if e.complexity.Customer.Email == nil {
 			break
@@ -134,13 +130,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Customer.ID(childComplexity), true
-
-	case "Customer.isActive":
-		if e.complexity.Customer.IsActive == nil {
-			break
-		}
-
-		return e.complexity.Customer.IsActive(childComplexity), true
 
 	case "Customer.licenseID":
 		if e.complexity.Customer.LicenseID == nil {
@@ -163,13 +152,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Customer.Name(childComplexity), true
 
-	case "Customer.password":
-		if e.complexity.Customer.Password == nil {
-			break
-		}
-
-		return e.complexity.Customer.Password(childComplexity), true
-
 	case "Customer.phoneNumber":
 		if e.complexity.Customer.PhoneNumber == nil {
 			break
@@ -183,13 +165,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Customer.Role(childComplexity), true
-
-	case "Customer.updateAt":
-		if e.complexity.Customer.UpdateAt == nil {
-			break
-		}
-
-		return e.complexity.Customer.UpdateAt(childComplexity), true
 
 	case "JWT.token":
 		if e.complexity.JWT.Token == nil {
@@ -205,29 +180,65 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.JWT.TokenType(childComplexity), true
 
-	case "Mutation.login":
+	case "Mutation.ChangePassword":
+		if e.complexity.Mutation.ChangePassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_ChangePassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ChangePassword(childComplexity, args["id"].(string), args["input"].(ent.ChangePasswordInput)), true
+
+	case "Mutation.Login":
 		if e.complexity.Mutation.Login == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_Login_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(ent.LoginInput)), true
 
-	case "Mutation.register":
+	case "Mutation.Register":
 		if e.complexity.Mutation.Register == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_register_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_Register_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Mutation.Register(childComplexity, args["input"].(ent.RegisterInput)), true
+
+	case "Mutation.Update":
+		if e.complexity.Mutation.Update == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_Update_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Update(childComplexity, args["id"].(string), args["input"].(ent.UpdateCustomerInput)), true
+
+	case "Mutation.UpdateRole":
+		if e.complexity.Mutation.UpdateRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateRole_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateRole(childComplexity, args["id"].(string), args["input"].(customer.Role)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -272,6 +283,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputChangePasswordInput,
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputRegisterInput,
 		ec.unmarshalInputUpdateCustomerInput,
@@ -337,7 +349,8 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../schema/client.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-
+directive @auth on FIELD_DEFINITION
+directive @hasRole(roles: [CustomerRole!]) on FIELD_DEFINITION
 
 input RegisterInput {
   name: String!
@@ -347,7 +360,6 @@ input RegisterInput {
   address: String!
   membershipNumber: Int
   password: String!
-  role: CustomerRole
 }
 
 input UpdateCustomerInput {
@@ -357,13 +369,17 @@ input UpdateCustomerInput {
   licenseID: String
   address: String
   membershipNumber: Int
-  isActive: Boolean
-  role: CustomerRole
 }
 
 input LoginInput{
   email:String!
   password:String!
+}
+
+input ChangePasswordInput{
+  oldPassword:String!
+  newPassword:String!
+  confirmPassword:String!
 }
 
 """
@@ -379,10 +395,6 @@ type Customer implements Node {
   licenseID: String!
   address: String!
   membershipNumber: Int!
-  isActive: Boolean!
-  password: String!
-  createAt: Time!
-  updateAt: Time!
   role: CustomerRole!
 }
 """CustomerRole is enum for the field role"""
@@ -430,8 +442,11 @@ type Query {
 }
 
 type Mutation{
-  register(input: RegisterInput!):JWT!
-  login(input: LoginInput!):JWT!
+  Register(input: RegisterInput!):JWT!
+  Login(input: LoginInput!):JWT!
+  Update(id:ID! , input: UpdateCustomerInput!):Customer! @auth @hasRole(roles:SUBSCRIBER)
+  ChangePassword(id:ID! ,input: ChangePasswordInput!):String! @auth @hasRole(roles:SUBSCRIBER)
+  UpdateRole(id:ID!,input:CustomerRole!):Customer! @auth @hasRole(roles:ADMIN)
 }
 """The builtin Time type"""
 scalar Time
@@ -444,7 +459,46 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []customer.Role
+	if tmp, ok := rawArgs["roles"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roles"))
+		arg0, err = ec.unmarshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["roles"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_ChangePassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.ChangePasswordInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNChangePasswordInput2customerᚋentᚐChangePasswordInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_Login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 ent.LoginInput
@@ -459,7 +513,7 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_register_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_Register_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 ent.RegisterInput
@@ -471,6 +525,54 @@ func (ec *executionContext) field_Mutation_register_args(ctx context.Context, ra
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_UpdateRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 customer.Role
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNCustomerRole2customerᚋentᚋcustomerᚐRole(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_Update_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateCustomerInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateCustomerInput2customerᚋentᚐUpdateCustomerInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -835,182 +937,6 @@ func (ec *executionContext) fieldContext_Customer_membershipNumber(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Customer_isActive(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Customer_isActive(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IsActive, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Customer_isActive(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Customer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Customer_password(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Customer_password(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Password, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Customer_password(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Customer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Customer_createAt(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Customer_createAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreateAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Customer_createAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Customer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Customer_updateAt(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Customer_updateAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdateAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Customer_updateAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Customer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Customer_role(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Customer_role(ctx, field)
 	if err != nil {
@@ -1143,8 +1069,8 @@ func (ec *executionContext) fieldContext_JWT_tokenType(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_register(ctx, field)
+func (ec *executionContext) _Mutation_Register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_Register(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1174,7 +1100,7 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 	return ec.marshalNJWT2ᚖcustomerᚋentᚐJwt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_Register(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1197,15 +1123,15 @@ func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, 
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_register_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_Register_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_login(ctx, field)
+func (ec *executionContext) _Mutation_Login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_Login(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1235,7 +1161,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	return ec.marshalNJWT2ᚖcustomerᚋentᚐJwt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_Login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1258,7 +1184,298 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_Login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_Update(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_Update(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Update(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateCustomerInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx, "SUBSCRIBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.Customer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *customer/ent.Customer`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Customer)
+	fc.Result = res
+	return ec.marshalNCustomer2ᚖcustomerᚋentᚐCustomer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_Update(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Customer_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Customer_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Customer_phoneNumber(ctx, field)
+			case "email":
+				return ec.fieldContext_Customer_email(ctx, field)
+			case "licenseID":
+				return ec.fieldContext_Customer_licenseID(ctx, field)
+			case "address":
+				return ec.fieldContext_Customer_address(ctx, field)
+			case "membershipNumber":
+				return ec.fieldContext_Customer_membershipNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_Customer_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_Update_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_ChangePassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_ChangePassword(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ChangePassword(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.ChangePasswordInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx, "SUBSCRIBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_ChangePassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_ChangePassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_UpdateRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_UpdateRole(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateRole(rctx, fc.Args["id"].(string), fc.Args["input"].(customer.Role))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.Customer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *customer/ent.Customer`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Customer)
+	fc.Result = res
+	return ec.marshalNCustomer2ᚖcustomerᚋentᚐCustomer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_UpdateRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Customer_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Customer_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Customer_phoneNumber(ctx, field)
+			case "email":
+				return ec.fieldContext_Customer_email(ctx, field)
+			case "licenseID":
+				return ec.fieldContext_Customer_licenseID(ctx, field)
+			case "address":
+				return ec.fieldContext_Customer_address(ctx, field)
+			case "membershipNumber":
+				return ec.fieldContext_Customer_membershipNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_Customer_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_UpdateRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -1488,14 +1705,6 @@ func (ec *executionContext) fieldContext_Query_customers(ctx context.Context, fi
 				return ec.fieldContext_Customer_address(ctx, field)
 			case "membershipNumber":
 				return ec.fieldContext_Customer_membershipNumber(ctx, field)
-			case "isActive":
-				return ec.fieldContext_Customer_isActive(ctx, field)
-			case "password":
-				return ec.fieldContext_Customer_password(ctx, field)
-			case "createAt":
-				return ec.fieldContext_Customer_createAt(ctx, field)
-			case "updateAt":
-				return ec.fieldContext_Customer_updateAt(ctx, field)
 			case "role":
 				return ec.fieldContext_Customer_role(ctx, field)
 			}
@@ -3407,6 +3616,50 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Context, obj interface{}) (ent.ChangePasswordInput, error) {
+	var it ent.ChangePasswordInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"oldPassword", "newPassword", "confirmPassword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "oldPassword":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oldPassword"))
+			it.OldPassword, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "newPassword":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+			it.NewPassword, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "confirmPassword":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmPassword"))
+			it.ConfirmPassword, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (ent.LoginInput, error) {
 	var it ent.LoginInput
 	asMap := map[string]interface{}{}
@@ -3450,7 +3703,7 @@ func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "phoneNumber", "email", "licenseID", "address", "membershipNumber", "password", "role"}
+	fieldsInOrder := [...]string{"name", "phoneNumber", "email", "licenseID", "address", "membershipNumber", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3513,14 +3766,6 @@ func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj
 			if err != nil {
 				return it, err
 			}
-		case "role":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			it.Role, err = ec.unmarshalOCustomerRole2ᚖcustomerᚋentᚋcustomerᚐRole(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		}
 	}
 
@@ -3534,7 +3779,7 @@ func (ec *executionContext) unmarshalInputUpdateCustomerInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "phoneNumber", "email", "licenseID", "address", "membershipNumber", "isActive", "role"}
+	fieldsInOrder := [...]string{"name", "phoneNumber", "email", "licenseID", "address", "membershipNumber"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3586,22 +3831,6 @@ func (ec *executionContext) unmarshalInputUpdateCustomerInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("membershipNumber"))
 			it.MembershipNumber, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "isActive":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isActive"))
-			it.IsActive, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "role":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			it.Role, err = ec.unmarshalOCustomerRole2ᚖcustomerᚋentᚋcustomerᚐRole(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3692,34 +3921,6 @@ func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "isActive":
-
-			out.Values[i] = ec._Customer_isActive(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "password":
-
-			out.Values[i] = ec._Customer_password(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "createAt":
-
-			out.Values[i] = ec._Customer_createAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateAt":
-
-			out.Values[i] = ec._Customer_updateAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "role":
 
 			out.Values[i] = ec._Customer_role(ctx, field, obj)
@@ -3792,19 +3993,46 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "register":
+		case "Register":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_register(ctx, field)
+				return ec._Mutation_Register(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "login":
+		case "Login":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_login(ctx, field)
+				return ec._Mutation_Login(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Update":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_Update(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "ChangePassword":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_ChangePassword(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UpdateRole":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_UpdateRole(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -4262,6 +4490,15 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNChangePasswordInput2customerᚋentᚐChangePasswordInput(ctx context.Context, v interface{}) (ent.ChangePasswordInput, error) {
+	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCustomer2customerᚋentᚐCustomer(ctx context.Context, sel ast.SelectionSet, v ent.Customer) graphql.Marshaler {
+	return ec._Customer(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNCustomer2ᚕᚖcustomerᚋentᚐCustomerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Customer) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4341,6 +4578,21 @@ func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.Selectio
 	return res
 }
 
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -4401,19 +4653,9 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
-	res, err := graphql.UnmarshalTime(v)
+func (ec *executionContext) unmarshalNUpdateCustomerInput2customerᚋentᚐUpdateCustomerInput(ctx context.Context, v interface{}) (ent.UpdateCustomerInput, error) {
+	res, err := ec.unmarshalInputUpdateCustomerInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
-	res := graphql.MarshalTime(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -4711,20 +4953,71 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
-func (ec *executionContext) unmarshalOCustomerRole2ᚖcustomerᚋentᚋcustomerᚐRole(ctx context.Context, v interface{}) (*customer.Role, error) {
+func (ec *executionContext) unmarshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx context.Context, v interface{}) ([]customer.Role, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(customer.Role)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]customer.Role, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNCustomerRole2customerᚋentᚋcustomerᚐRole(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
-func (ec *executionContext) marshalOCustomerRole2ᚖcustomerᚋentᚋcustomerᚐRole(ctx context.Context, sel ast.SelectionSet, v *customer.Role) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomerRole2ᚕcustomerᚋentᚋcustomerᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []customer.Role) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return v
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCustomerRole2customerᚋentᚋcustomerᚐRole(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

@@ -5,6 +5,7 @@ import (
 	"customer/ent"
 	"customer/internal/logger"
 	"customer/internal/utils"
+	"customer/middleware"
 	"customer/resolver"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -58,6 +59,8 @@ func main() {
 	initLogger()
 	// Create a Gin router instance
 	r := gin.Default()
+
+	r.Use(middleware.AuthMiddleware(), middleware.CorsMiddleware(), middleware.RequestCtxMiddleware())
 
 	get := utils.GetEnvWithKey
 	PORT := get("PORT")

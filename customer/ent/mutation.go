@@ -347,7 +347,7 @@ func (m *CustomerMutation) MembershipNumber() (r int, exists bool) {
 // OldMembershipNumber returns the old "membership_number" field's value of the Customer entity.
 // If the Customer object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomerMutation) OldMembershipNumber(ctx context.Context) (v *int, err error) {
+func (m *CustomerMutation) OldMembershipNumber(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMembershipNumber is only allowed on UpdateOne operations")
 	}
@@ -379,10 +379,24 @@ func (m *CustomerMutation) AddedMembershipNumber() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearMembershipNumber clears the value of the "membership_number" field.
+func (m *CustomerMutation) ClearMembershipNumber() {
+	m.membership_number = nil
+	m.addmembership_number = nil
+	m.clearedFields[customer.FieldMembershipNumber] = struct{}{}
+}
+
+// MembershipNumberCleared returns if the "membership_number" field was cleared in this mutation.
+func (m *CustomerMutation) MembershipNumberCleared() bool {
+	_, ok := m.clearedFields[customer.FieldMembershipNumber]
+	return ok
+}
+
 // ResetMembershipNumber resets all changes to the "membership_number" field.
 func (m *CustomerMutation) ResetMembershipNumber() {
 	m.membership_number = nil
 	m.addmembership_number = nil
+	delete(m.clearedFields, customer.FieldMembershipNumber)
 }
 
 // SetIsActive sets the "is_active" field.
@@ -824,7 +838,11 @@ func (m *CustomerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *CustomerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(customer.FieldMembershipNumber) {
+		fields = append(fields, customer.FieldMembershipNumber)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -837,6 +855,11 @@ func (m *CustomerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *CustomerMutation) ClearField(name string) error {
+	switch name {
+	case customer.FieldMembershipNumber:
+		m.ClearMembershipNumber()
+		return nil
+	}
 	return fmt.Errorf("unknown Customer nullable field %s", name)
 }
 

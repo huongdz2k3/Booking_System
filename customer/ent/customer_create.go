@@ -56,6 +56,14 @@ func (cc *CustomerCreate) SetMembershipNumber(i int) *CustomerCreate {
 	return cc
 }
 
+// SetNillableMembershipNumber sets the "membership_number" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableMembershipNumber(i *int) *CustomerCreate {
+	if i != nil {
+		cc.SetMembershipNumber(*i)
+	}
+	return cc
+}
+
 // SetIsActive sets the "is_active" field.
 func (cc *CustomerCreate) SetIsActive(b bool) *CustomerCreate {
 	cc.mutation.SetIsActive(b)
@@ -201,9 +209,6 @@ func (cc *CustomerCreate) check() error {
 			return &ValidationError{Name: "address", err: fmt.Errorf(`ent: validator failed for field "Customer.address": %w`, err)}
 		}
 	}
-	if _, ok := cc.mutation.MembershipNumber(); !ok {
-		return &ValidationError{Name: "membership_number", err: errors.New(`ent: missing required field "Customer.membership_number"`)}
-	}
 	if v, ok := cc.mutation.MembershipNumber(); ok {
 		if err := customer.MembershipNumberValidator(v); err != nil {
 			return &ValidationError{Name: "membership_number", err: fmt.Errorf(`ent: validator failed for field "Customer.membership_number": %w`, err)}
@@ -282,7 +287,7 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := cc.mutation.MembershipNumber(); ok {
 		_spec.SetField(customer.FieldMembershipNumber, field.TypeInt, value)
-		_node.MembershipNumber = &value
+		_node.MembershipNumber = value
 	}
 	if value, ok := cc.mutation.IsActive(); ok {
 		_spec.SetField(customer.FieldIsActive, field.TypeBool, value)

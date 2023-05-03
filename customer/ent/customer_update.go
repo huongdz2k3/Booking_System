@@ -65,9 +65,23 @@ func (cu *CustomerUpdate) SetMembershipNumber(i int) *CustomerUpdate {
 	return cu
 }
 
+// SetNillableMembershipNumber sets the "membership_number" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillableMembershipNumber(i *int) *CustomerUpdate {
+	if i != nil {
+		cu.SetMembershipNumber(*i)
+	}
+	return cu
+}
+
 // AddMembershipNumber adds i to the "membership_number" field.
 func (cu *CustomerUpdate) AddMembershipNumber(i int) *CustomerUpdate {
 	cu.mutation.AddMembershipNumber(i)
+	return cu
+}
+
+// ClearMembershipNumber clears the value of the "membership_number" field.
+func (cu *CustomerUpdate) ClearMembershipNumber() *CustomerUpdate {
+	cu.mutation.ClearMembershipNumber()
 	return cu
 }
 
@@ -235,6 +249,9 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.AddedMembershipNumber(); ok {
 		_spec.AddField(customer.FieldMembershipNumber, field.TypeInt, value)
 	}
+	if cu.mutation.MembershipNumberCleared() {
+		_spec.ClearField(customer.FieldMembershipNumber, field.TypeInt)
+	}
 	if value, ok := cu.mutation.IsActive(); ok {
 		_spec.SetField(customer.FieldIsActive, field.TypeBool, value)
 	}
@@ -307,9 +324,23 @@ func (cuo *CustomerUpdateOne) SetMembershipNumber(i int) *CustomerUpdateOne {
 	return cuo
 }
 
+// SetNillableMembershipNumber sets the "membership_number" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillableMembershipNumber(i *int) *CustomerUpdateOne {
+	if i != nil {
+		cuo.SetMembershipNumber(*i)
+	}
+	return cuo
+}
+
 // AddMembershipNumber adds i to the "membership_number" field.
 func (cuo *CustomerUpdateOne) AddMembershipNumber(i int) *CustomerUpdateOne {
 	cuo.mutation.AddMembershipNumber(i)
+	return cuo
+}
+
+// ClearMembershipNumber clears the value of the "membership_number" field.
+func (cuo *CustomerUpdateOne) ClearMembershipNumber() *CustomerUpdateOne {
+	cuo.mutation.ClearMembershipNumber()
 	return cuo
 }
 
@@ -506,6 +537,9 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if value, ok := cuo.mutation.AddedMembershipNumber(); ok {
 		_spec.AddField(customer.FieldMembershipNumber, field.TypeInt, value)
+	}
+	if cuo.mutation.MembershipNumberCleared() {
+		_spec.ClearField(customer.FieldMembershipNumber, field.TypeInt)
 	}
 	if value, ok := cuo.mutation.IsActive(); ok {
 		_spec.SetField(customer.FieldIsActive, field.TypeBool, value)

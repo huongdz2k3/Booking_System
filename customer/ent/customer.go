@@ -28,7 +28,7 @@ type Customer struct {
 	// Address holds the value of the "address" field.
 	Address string `json:"address,omitempty"`
 	// MembershipNumber holds the value of the "membership_number" field.
-	MembershipNumber *int `json:"membership_number,omitempty"`
+	MembershipNumber int `json:"membership_number,omitempty"`
 	// IsActive holds the value of the "is_active" field.
 	IsActive bool `json:"is_active,omitempty"`
 	// Password holds the value of the "password" field.
@@ -110,8 +110,7 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field membership_number", values[i])
 			} else if value.Valid {
-				c.MembershipNumber = new(int)
-				*c.MembershipNumber = int(value.Int64)
+				c.MembershipNumber = int(value.Int64)
 			}
 		case customer.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -194,10 +193,8 @@ func (c *Customer) String() string {
 	builder.WriteString("address=")
 	builder.WriteString(c.Address)
 	builder.WriteString(", ")
-	if v := c.MembershipNumber; v != nil {
-		builder.WriteString("membership_number=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("membership_number=")
+	builder.WriteString(fmt.Sprintf("%v", c.MembershipNumber))
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", c.IsActive))

@@ -7,18 +7,73 @@ package resolver
 import (
 	"context"
 	"customer/ent"
+	"customer/ent/customer"
 	graphql1 "customer/graphql"
+	"customer/internal/utils"
+	customer2 "customer/proto/customer"
+	"customer/service"
 	"fmt"
+	"strconv"
 )
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input ent.RegisterInput) (*ent.Jwt, error) {
-	panic(fmt.Errorf("not implemented: Register - register"))
+	cus, err := customer2.Register(&input)
+	if err != nil {
+		return nil, err
+	}
+	token, _ := service.JwtGenerate(int(cus.Id), cus.Role)
+
+	return &ent.Jwt{
+		Token:     token,
+		TokenType: "Bearer",
+	}, nil
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input ent.LoginInput) (*ent.Jwt, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+	cus, err := customer2.Login(&input)
+	if err != nil {
+		return nil, err
+	}
+	token, _ := service.JwtGenerate(int(cus.GetId()), cus.GetRole())
+	return &ent.Jwt{
+		Token:     token,
+		TokenType: "Bearer",
+	}, nil
+}
+
+// Update is the resolver for the Update field.
+func (r *mutationResolver) Update(ctx context.Context, id string, input ent.UpdateCustomerInput) (*ent.Customer, error) {
+	idInt, err := strconv.Atoi(id)
+	payload := ctx.Value("auth").(*service.JwtCustomClaim)
+	if payload.ID != idInt {
+		return nil, utils.WrapGQLUnauthorizedError(ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+	cus, err := customer2.Update(&input, idInt)
+	return customer2.FromProtoCustomer(cus)
+}
+
+// ChangePassword is the resolver for the ChangePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, id string, input ent.ChangePasswordInput) (string, error) {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return "", err
+	}
+	return customer2.ChangePassword(&input, idInt)
+}
+
+// UpdateRole is the resolver for the UpdateRole field.
+func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input customer.Role) (*ent.Customer, error) {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+	cus, err := customer2.UpdateRole(input, idInt)
+	return customer2.FromProtoCustomer(cus)
 }
 
 // Customers is the resolver for the customers field.

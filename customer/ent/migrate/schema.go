@@ -16,7 +16,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "license_id", Type: field.TypeString, Unique: true},
 		{Name: "address", Type: field.TypeString},
-		{Name: "membership_number", Type: field.TypeInt},
+		{Name: "membership_number", Type: field.TypeInt, Nullable: true},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "create_at", Type: field.TypeTime},

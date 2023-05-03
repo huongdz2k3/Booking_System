@@ -36,7 +36,7 @@ func (Customer) Fields() []ent.Field {
 			Annotations(
 				entproto.Field(6),
 			),
-		field.Int("membership_number").NonNegative().Nillable().
+		field.Int("membership_number").NonNegative().Optional().
 			Annotations(
 				entproto.Field(7),
 			),

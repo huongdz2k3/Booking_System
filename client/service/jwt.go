@@ -2,13 +2,15 @@ package service
 
 import (
 	"context"
+	"customer/internal/logger"
 	"customer/internal/utils"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
 
 type JwtCustomClaim struct {
-	ID int `json:"id"`
+	ID   int    `json:"id"`
+	Role string `json:"role"`
 	jwt.StandardClaims
 }
 
@@ -24,11 +26,20 @@ func getJwtSecret() string {
 	return secret
 }
 
-func JwtGenerate(ctx context.Context, userID int) (string, error) {
+func JwtGenerate(userID int, role string) (string, error) {
+	utils.LoadEnv()
+	get := utils.GetEnvWithKey
+	timeExpired, err := time.ParseDuration(get("JWT_EXPIRE"))
+
+	if err != nil {
+		logger.NewLogger().Error("JWT_EXPIRE is not a number")
+		return "", err
+	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaim{
-		ID: userID,
+		ID:   userID,
+		Role: role,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * timeExpired).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 	})

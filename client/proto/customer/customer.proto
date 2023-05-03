@@ -15,11 +15,12 @@ message Customer {
   string phone_number = 3;
 
   string email = 4;
+
   string license_id = 5;
 
   string address = 6;
 
-  optional int64 membership_number = 7;
+  int64 membership_number = 7;
 
   bool is_active = 8;
 
@@ -43,7 +44,7 @@ message RegisterInput{
 
   string address = 6;
 
-  optional int64 membership_number = 7;
+  int64 membership_number = 7;
 
   string password = 9;
 }
@@ -70,7 +71,7 @@ message UpdateCustomerInput{
 
   string address = 6;
 
-  optional int64 membership_number = 7;
+  int64 membership_number = 7;
 
 }
 
