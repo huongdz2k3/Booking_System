@@ -4,6 +4,7 @@ package ent
 
 import (
 	"customer/ent/customer"
+	"customer/ent/flight"
 	"time"
 )
 
@@ -111,6 +112,112 @@ func (c *CustomerUpdate) SetInput(i UpdateCustomerInput) *CustomerUpdate {
 
 // SetInput applies the change-set in the UpdateCustomerInput on the CustomerUpdateOne builder.
 func (c *CustomerUpdateOne) SetInput(i UpdateCustomerInput) *CustomerUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateFlightInput represents a mutation input for creating flights.
+type CreateFlightInput struct {
+	Name           string
+	From           string
+	To             string
+	DepartDate     time.Time
+	DepartTime     time.Time
+	Status         *flight.Status
+	AvailableSlots int
+	ReturnDate     time.Time
+	FlightPlane    string
+	CreatedAt      *time.Time
+	UpdatedAt      *time.Time
+}
+
+// Mutate applies the CreateFlightInput on the FlightMutation builder.
+func (i *CreateFlightInput) Mutate(m *FlightMutation) {
+	m.SetName(i.Name)
+	m.SetFrom(i.From)
+	m.SetTo(i.To)
+	m.SetDepartDate(i.DepartDate)
+	m.SetDepartTime(i.DepartTime)
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	m.SetAvailableSlots(i.AvailableSlots)
+	m.SetReturnDate(i.ReturnDate)
+	m.SetFlightPlane(i.FlightPlane)
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateFlightInput on the FlightCreate builder.
+func (c *FlightCreate) SetInput(i CreateFlightInput) *FlightCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateFlightInput represents a mutation input for updating flights.
+type UpdateFlightInput struct {
+	Name           *string
+	From           *string
+	To             *string
+	DepartDate     *time.Time
+	DepartTime     *time.Time
+	Status         *flight.Status
+	AvailableSlots *int
+	ReturnDate     *time.Time
+	FlightPlane    *string
+	CreatedAt      *time.Time
+	UpdatedAt      *time.Time
+}
+
+// Mutate applies the UpdateFlightInput on the FlightMutation builder.
+func (i *UpdateFlightInput) Mutate(m *FlightMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.From; v != nil {
+		m.SetFrom(*v)
+	}
+	if v := i.To; v != nil {
+		m.SetTo(*v)
+	}
+	if v := i.DepartDate; v != nil {
+		m.SetDepartDate(*v)
+	}
+	if v := i.DepartTime; v != nil {
+		m.SetDepartTime(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.AvailableSlots; v != nil {
+		m.SetAvailableSlots(*v)
+	}
+	if v := i.ReturnDate; v != nil {
+		m.SetReturnDate(*v)
+	}
+	if v := i.FlightPlane; v != nil {
+		m.SetFlightPlane(*v)
+	}
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateFlightInput on the FlightUpdate builder.
+func (c *FlightUpdate) SetInput(i UpdateFlightInput) *FlightUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateFlightInput on the FlightUpdateOne builder.
+func (c *FlightUpdateOne) SetInput(i UpdateFlightInput) *FlightUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

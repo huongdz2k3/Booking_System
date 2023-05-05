@@ -20,6 +20,18 @@ func (f CustomerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CustomerMutation", m)
 }
 
+// The FlightFunc type is an adapter to allow the use of ordinary
+// function as Flight mutator.
+type FlightFunc func(context.Context, *ent.FlightMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FlightFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FlightMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FlightMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

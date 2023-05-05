@@ -2,6 +2,10 @@
 
 package ent
 
+import (
+	"time"
+)
+
 type ChangePasswordInput struct {
 	OldPassword     string `json:"oldPassword"`
 	NewPassword     string `json:"newPassword"`
@@ -18,6 +22,13 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
+type PaginationInfo struct {
+	Size         *int `json:"size,omitempty"`
+	Page         *int `json:"page,omitempty"`
+	TotalPages   *int `json:"totalPages,omitempty"`
+	TotalRecords *int `json:"totalRecords,omitempty"`
+}
+
 type RegisterInput struct {
 	Name             string `json:"name"`
 	PhoneNumber      string `json:"phoneNumber"`
@@ -26,4 +37,18 @@ type RegisterInput struct {
 	Address          string `json:"address"`
 	MembershipNumber *int   `json:"membershipNumber,omitempty"`
 	Password         string `json:"password"`
+}
+
+type SearchFlightInput struct {
+	From       string    `json:"from"`
+	To         string    `json:"to"`
+	ReturnDate time.Time `json:"return_date"`
+	DepartDate time.Time `json:"depart_date"`
+	Size       int       `json:"size"`
+	Page       int       `json:"page"`
+}
+
+type SearchFlightResponse struct {
+	Flights        []*Flight       `json:"flights"`
+	PaginationInfo *PaginationInfo `json:"paginationInfo"`
 }

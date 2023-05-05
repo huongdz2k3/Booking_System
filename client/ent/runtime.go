@@ -4,6 +4,7 @@ package ent
 
 import (
 	"customer/ent/customer"
+	"customer/ent/flight"
 	"customer/ent/schema"
 	"time"
 )
@@ -98,4 +99,18 @@ func init() {
 	customerDescUpdateAt := customerFields[9].Descriptor()
 	// customer.DefaultUpdateAt holds the default value on creation for the update_at field.
 	customer.DefaultUpdateAt = customerDescUpdateAt.Default.(time.Time)
+	flightFields := schema.Flight{}.Fields()
+	_ = flightFields
+	// flightDescAvailableSlots is the schema descriptor for available_slots field.
+	flightDescAvailableSlots := flightFields[6].Descriptor()
+	// flight.AvailableSlotsValidator is a validator for the "available_slots" field. It is called by the builders before save.
+	flight.AvailableSlotsValidator = flightDescAvailableSlots.Validators[0].(func(int) error)
+	// flightDescCreatedAt is the schema descriptor for created_at field.
+	flightDescCreatedAt := flightFields[9].Descriptor()
+	// flight.DefaultCreatedAt holds the default value on creation for the created_at field.
+	flight.DefaultCreatedAt = flightDescCreatedAt.Default.(time.Time)
+	// flightDescUpdatedAt is the schema descriptor for updated_at field.
+	flightDescUpdatedAt := flightFields[10].Descriptor()
+	// flight.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	flight.DefaultUpdatedAt = flightDescUpdatedAt.Default.(time.Time)
 }

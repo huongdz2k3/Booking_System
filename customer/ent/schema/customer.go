@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
-	"time"
 )
 
 // Customer holds the schema definition for the Customer entity.
@@ -16,7 +17,7 @@ type Customer struct {
 // Fields of the Customer.
 func (Customer) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").NotEmpty().MinLen(2).MaxLen(8).
+		field.String("name").NotEmpty().MinLen(2).
 			Annotations(
 				entproto.Field(2),
 			),

@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"customer/ent/customer"
+	"customer/ent/flight"
 	"errors"
 
 	"entgo.io/contrib/entgql"
@@ -338,5 +339,251 @@ func (c *Customer) ToEdge(order *CustomerOrder) *CustomerEdge {
 	return &CustomerEdge{
 		Node:   c,
 		Cursor: order.Field.toCursor(c),
+	}
+}
+
+// FlightEdge is the edge representation of Flight.
+type FlightEdge struct {
+	Node   *Flight `json:"node"`
+	Cursor Cursor  `json:"cursor"`
+}
+
+// FlightConnection is the connection containing edges to Flight.
+type FlightConnection struct {
+	Edges      []*FlightEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
+}
+
+func (c *FlightConnection) build(nodes []*Flight, pager *flightPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Flight
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Flight {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Flight {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*FlightEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &FlightEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// FlightPaginateOption enables pagination customization.
+type FlightPaginateOption func(*flightPager) error
+
+// WithFlightOrder configures pagination ordering.
+func WithFlightOrder(order *FlightOrder) FlightPaginateOption {
+	if order == nil {
+		order = DefaultFlightOrder
+	}
+	o := *order
+	return func(pager *flightPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultFlightOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithFlightFilter configures pagination filter.
+func WithFlightFilter(filter func(*FlightQuery) (*FlightQuery, error)) FlightPaginateOption {
+	return func(pager *flightPager) error {
+		if filter == nil {
+			return errors.New("FlightQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type flightPager struct {
+	reverse bool
+	order   *FlightOrder
+	filter  func(*FlightQuery) (*FlightQuery, error)
+}
+
+func newFlightPager(opts []FlightPaginateOption, reverse bool) (*flightPager, error) {
+	pager := &flightPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultFlightOrder
+	}
+	return pager, nil
+}
+
+func (p *flightPager) applyFilter(query *FlightQuery) (*FlightQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *flightPager) toCursor(f *Flight) Cursor {
+	return p.order.Field.toCursor(f)
+}
+
+func (p *flightPager) applyCursors(query *FlightQuery, after, before *Cursor) (*FlightQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultFlightOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *flightPager) applyOrder(query *FlightQuery) *FlightQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultFlightOrder.Field {
+		query = query.Order(DefaultFlightOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *flightPager) orderExpr(query *FlightQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultFlightOrder.Field {
+			b.Comma().Ident(DefaultFlightOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Flight.
+func (f *FlightQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...FlightPaginateOption,
+) (*FlightConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newFlightPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if f, err = pager.applyFilter(f); err != nil {
+		return nil, err
+	}
+	conn := &FlightConnection{Edges: []*FlightEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = f.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if f, err = pager.applyCursors(f, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		f.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := f.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	f = pager.applyOrder(f)
+	nodes, err := f.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// FlightOrderField defines the ordering field of Flight.
+type FlightOrderField struct {
+	// Value extracts the ordering value from the given Flight.
+	Value    func(*Flight) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) flight.OrderOption
+	toCursor func(*Flight) Cursor
+}
+
+// FlightOrder defines the ordering of Flight.
+type FlightOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *FlightOrderField `json:"field"`
+}
+
+// DefaultFlightOrder is the default ordering of Flight.
+var DefaultFlightOrder = &FlightOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.ID, nil
+		},
+		column: flight.FieldID,
+		toTerm: flight.ByID,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{ID: f.ID}
+		},
+	},
+}
+
+// ToEdge converts Flight into FlightEdge.
+func (f *Flight) ToEdge(order *FlightOrder) *FlightEdge {
+	if order == nil {
+		order = DefaultFlightOrder
+	}
+	return &FlightEdge{
+		Node:   f,
+		Cursor: order.Field.toCursor(f),
 	}
 }

@@ -8,3 +8,6 @@ import (
 
 // Customer is the predicate function for customer builders.
 type Customer func(*sql.Selector)
+
+// Flight is the predicate function for flight builders.
+type Flight func(*sql.Selector)

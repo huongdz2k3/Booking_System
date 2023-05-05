@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"customer-service/ent"
-	"customer-service/ent/proto/entpb"
 	"customer-service/internal/logger"
 	"customer-service/internal/utils"
+	entpb2 "customer-service/proto/entpb"
 	"fmt"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -37,11 +37,11 @@ func main() {
 		logger.NewLogger().Fatal("failed creating schema resources", zap.Error(err))
 	}
 	// Initialize the generated Customer service.
-	svc := entpb.NewCustomerService(client)
+	svc := entpb2.NewCustomerService(client)
 	// Create a new gRPC server (you can wire multiple services to a single server).
 	server := grpc.NewServer()
 	// Register the Customer service with the server.
-	entpb.RegisterCustomerServiceServer(server, svc)
+	entpb2.RegisterCustomerServiceServer(server, svc)
 
 	// Open port 5000 for listening to traffic.
 	lis, err := net.Listen("tcp", ":"+get("PORT"))

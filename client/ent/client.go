@@ -11,6 +11,7 @@ import (
 	"customer/ent/migrate"
 
 	"customer/ent/customer"
+	"customer/ent/flight"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
+	// Flight is the client for interacting with the Flight builders.
+	Flight *FlightClient
 	// additional fields for node api
 	tables tables
 }
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Customer = NewCustomerClient(c.config)
+	c.Flight = NewFlightClient(c.config)
 }
 
 type (
@@ -123,6 +127,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:      ctx,
 		config:   cfg,
 		Customer: NewCustomerClient(cfg),
+		Flight:   NewFlightClient(cfg),
 	}, nil
 }
 
@@ -143,6 +148,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:      ctx,
 		config:   cfg,
 		Customer: NewCustomerClient(cfg),
+		Flight:   NewFlightClient(cfg),
 	}, nil
 }
 
@@ -172,12 +178,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Customer.Use(hooks...)
+	c.Flight.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Customer.Intercept(interceptors...)
+	c.Flight.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -185,6 +193,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CustomerMutation:
 		return c.Customer.mutate(ctx, m)
+	case *FlightMutation:
+		return c.Flight.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -308,12 +318,130 @@ func (c *CustomerClient) mutate(ctx context.Context, m *CustomerMutation) (Value
 	}
 }
 
+// FlightClient is a client for the Flight schema.
+type FlightClient struct {
+	config
+}
+
+// NewFlightClient returns a client for the Flight from the given config.
+func NewFlightClient(c config) *FlightClient {
+	return &FlightClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `flight.Hooks(f(g(h())))`.
+func (c *FlightClient) Use(hooks ...Hook) {
+	c.hooks.Flight = append(c.hooks.Flight, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `flight.Intercept(f(g(h())))`.
+func (c *FlightClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Flight = append(c.inters.Flight, interceptors...)
+}
+
+// Create returns a builder for creating a Flight entity.
+func (c *FlightClient) Create() *FlightCreate {
+	mutation := newFlightMutation(c.config, OpCreate)
+	return &FlightCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Flight entities.
+func (c *FlightClient) CreateBulk(builders ...*FlightCreate) *FlightCreateBulk {
+	return &FlightCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Flight.
+func (c *FlightClient) Update() *FlightUpdate {
+	mutation := newFlightMutation(c.config, OpUpdate)
+	return &FlightUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FlightClient) UpdateOne(f *Flight) *FlightUpdateOne {
+	mutation := newFlightMutation(c.config, OpUpdateOne, withFlight(f))
+	return &FlightUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FlightClient) UpdateOneID(id int) *FlightUpdateOne {
+	mutation := newFlightMutation(c.config, OpUpdateOne, withFlightID(id))
+	return &FlightUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Flight.
+func (c *FlightClient) Delete() *FlightDelete {
+	mutation := newFlightMutation(c.config, OpDelete)
+	return &FlightDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FlightClient) DeleteOne(f *Flight) *FlightDeleteOne {
+	return c.DeleteOneID(f.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FlightClient) DeleteOneID(id int) *FlightDeleteOne {
+	builder := c.Delete().Where(flight.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FlightDeleteOne{builder}
+}
+
+// Query returns a query builder for Flight.
+func (c *FlightClient) Query() *FlightQuery {
+	return &FlightQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFlight},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Flight entity by its id.
+func (c *FlightClient) Get(ctx context.Context, id int) (*Flight, error) {
+	return c.Query().Where(flight.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FlightClient) GetX(ctx context.Context, id int) *Flight {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FlightClient) Hooks() []Hook {
+	return c.hooks.Flight
+}
+
+// Interceptors returns the client interceptors.
+func (c *FlightClient) Interceptors() []Interceptor {
+	return c.inters.Flight
+}
+
+func (c *FlightClient) mutate(ctx context.Context, m *FlightMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FlightCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FlightUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FlightUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FlightDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Flight mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Customer []ent.Hook
+		Customer, Flight []ent.Hook
 	}
 	inters struct {
-		Customer []ent.Interceptor
+		Customer, Flight []ent.Interceptor
 	}
 )

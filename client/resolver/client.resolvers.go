@@ -11,6 +11,7 @@ import (
 	graphql1 "customer/graphql"
 	"customer/internal/utils"
 	customer2 "customer/proto/customer"
+	"customer/proto/flight"
 	"customer/service"
 	"fmt"
 	"strconv"
@@ -76,9 +77,41 @@ func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input cust
 	return customer2.FromProtoCustomer(cus)
 }
 
+// CreateFlight is the resolver for the CreateFlight field.
+func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFlightInput) (*ent.Flight, error) {
+	fli, err := flight.CreateFlight(&input)
+	if err != nil {
+		return nil, err
+	}
+	return flight.FromProtoFlight(fli)
+}
+
+// UpdateFlight is the resolver for the UpdateFlight field.
+func (r *mutationResolver) UpdateFlight(ctx context.Context, id string, input ent.UpdateFlightInput) (*ent.Flight, error) {
+	numId, err := utils.ConvertStringToInt(id)
+	if err != nil {
+		return nil, err
+	}
+	fli, err := flight.UpdateFlight(&input, *numId)
+	if err != nil {
+		return nil, err
+	}
+	return flight.FromProtoFlight(fli)
+}
+
 // Customers is the resolver for the customers field.
 func (r *queryResolver) Customers(ctx context.Context) ([]*ent.Customer, error) {
 	panic(fmt.Errorf("not implemented: Customers - customers"))
+}
+
+// SearchFlight is the resolver for the SearchFlight field.
+func (r *queryResolver) SearchFlight(ctx context.Context, input ent.SearchFlightInput) (*ent.SearchFlightResponse, error) {
+	results, err := flight.SearchFlights(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	return flight.ConvertListProtoToFlights(results)
 }
 
 // Mutation returns graphql1.MutationResolver implementation.

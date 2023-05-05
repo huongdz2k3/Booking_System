@@ -1,8 +1,15 @@
-directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 directive @auth on FIELD_DEFINITION
 directive @hasRole(roles: [CustomerRole!]) on FIELD_DEFINITION
 
+#Customer Service
 input RegisterInput {
   name: String!
   phoneNumber: String!
@@ -22,21 +29,17 @@ input UpdateCustomerInput {
   membershipNumber: Int
 }
 
-input LoginInput{
-  email:String!
-  password:String!
+input LoginInput {
+  email: String!
+  password: String!
 }
 
-input ChangePasswordInput{
-  oldPassword:String!
-  newPassword:String!
-  confirmPassword:String!
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+  confirmPassword: String!
 }
 
-"""
-Define a Relay Cursor type:
-https://relay.dev/graphql/connections.htm#sec-Cursor
-"""
 scalar Cursor
 type Customer implements Node {
   id: ID!
@@ -48,7 +51,7 @@ type Customer implements Node {
   membershipNumber: Int!
   role: CustomerRole!
 }
-"""CustomerRole is enum for the field role"""
+
 enum CustomerRole @goModel(model: "customer/ent/customer.Role") {
   SUBSCRIBER
   ADMIN
@@ -58,14 +61,22 @@ An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
 interface Node @goModel(model: "customer/ent.Noder") {
-  """The id of the object."""
+  """
+  The id of the object.
+  """
   id: ID!
 }
-"""Possible directions in which to order a list of items when provided an `orderBy` argument."""
+"""
+Possible directions in which to order a list of items when provided an `orderBy` argument.
+"""
 enum OrderDirection {
-  """Specifies an ascending order for a given `orderBy` argument."""
+  """
+  Specifies an ascending order for a given `orderBy` argument.
+  """
   ASC
-  """Specifies a descending order for a given `orderBy` argument."""
+  """
+  Specifies a descending order for a given `orderBy` argument.
+  """
   DESC
 }
 """
@@ -73,32 +84,118 @@ Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
 type PageInfo {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: Cursor
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: Cursor
 }
 
+type PaginationInfo {
+  size: Int
+  page: Int
+  totalPages: Int
+  totalRecords: Int
+}
+
 #Token
-type JWT{
+type JWT {
   token: String!
   tokenType: String!
 }
+
+#Flight Service
+type Flight implements Node {
+  id: ID!
+  name: String!
+  from: String!
+  to: String!
+  depart_time: Time!
+  depart_date: Time!
+  status: FlightStatus!
+  available_slots: Int!
+  flight_plane: String!
+}
+
+input CreateFlightInput {
+  name: String!
+  from: String!
+  to: String!
+  depart_time: Time!
+  depart_date: Time!
+  available_slots: Int!
+  flight_plane: String!
+  status: FlightStatus!
+}
+
+input UpdateFlightInput {
+  name: String
+  from: String
+  to: String
+  depart_time: Time
+  depart_date: Time
+  status: FlightStatus
+  available_slots: Int
+  flight_plane: String
+}
+
+input SearchFlightInput {
+  from: String!
+  to: String!
+  return_date: Time!
+  depart_date: Time!
+  size: Int!
+  page: Int!
+}
+
+type SearchFlightResponse {
+  flights: [Flight!]!
+  paginationInfo: PaginationInfo!
+}
+
+enum FlightStatus @goModel(model: "customer/ent/flight.Status") {
+  ONTIME
+  DELAYED
+  CANCELLED
+  SCHEDULED
+}
 type Query {
   customers: [Customer!]!
+  SearchFlight(input: SearchFlightInput!): SearchFlightResponse!
 }
 
-type Mutation{
-  Register(input: RegisterInput!):JWT!
-  Login(input: LoginInput!):JWT!
-  Update(id:ID! , input: UpdateCustomerInput!):Customer! @auth @hasRole(roles:SUBSCRIBER)
-  ChangePassword(id:ID! ,input: ChangePasswordInput!):String! @auth @hasRole(roles:SUBSCRIBER)
-  UpdateRole(id:ID!,input:CustomerRole!):Customer! @auth @hasRole(roles:ADMIN)
+type Mutation {
+  #Customer Service
+  Register(input: RegisterInput!): JWT!
+  Login(input: LoginInput!): JWT!
+  Update(id: ID!, input: UpdateCustomerInput!): Customer!
+    @auth
+    @hasRole(roles: SUBSCRIBER)
+  ChangePassword(id: ID!, input: ChangePasswordInput!): String!
+    @auth
+    @hasRole(roles: SUBSCRIBER)
+  UpdateRole(id: ID!, input: CustomerRole!): Customer!
+    @auth
+    @hasRole(roles: ADMIN)
+
+  #Flight Service
+  CreateFlight(input: CreateFlightInput!): Flight! @auth @hasRole(roles: ADMIN)
+  UpdateFlight(id: ID!, input: UpdateFlightInput!): Flight!
+    @auth
+    @hasRole(roles: ADMIN)
 }
-"""The builtin Time type"""
+"""
+The builtin Time type
+"""
 scalar Time
-

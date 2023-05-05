@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"customer/ent/customer"
+	"customer/ent/flight"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
@@ -106,6 +107,120 @@ type customerPaginateArgs struct {
 
 func newCustomerPaginateArgs(rv map[string]interface{}) *customerPaginateArgs {
 	args := &customerPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (f *FlightQuery) CollectFields(ctx context.Context, satisfies ...string) (*FlightQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return f, nil
+	}
+	if err := f.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return f, nil
+}
+
+func (f *FlightQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(flight.Columns))
+		selectedFields = []string{flight.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "name":
+			if _, ok := fieldSeen[flight.FieldName]; !ok {
+				selectedFields = append(selectedFields, flight.FieldName)
+				fieldSeen[flight.FieldName] = struct{}{}
+			}
+		case "from":
+			if _, ok := fieldSeen[flight.FieldFrom]; !ok {
+				selectedFields = append(selectedFields, flight.FieldFrom)
+				fieldSeen[flight.FieldFrom] = struct{}{}
+			}
+		case "to":
+			if _, ok := fieldSeen[flight.FieldTo]; !ok {
+				selectedFields = append(selectedFields, flight.FieldTo)
+				fieldSeen[flight.FieldTo] = struct{}{}
+			}
+		case "departDate":
+			if _, ok := fieldSeen[flight.FieldDepartDate]; !ok {
+				selectedFields = append(selectedFields, flight.FieldDepartDate)
+				fieldSeen[flight.FieldDepartDate] = struct{}{}
+			}
+		case "departTime":
+			if _, ok := fieldSeen[flight.FieldDepartTime]; !ok {
+				selectedFields = append(selectedFields, flight.FieldDepartTime)
+				fieldSeen[flight.FieldDepartTime] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[flight.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, flight.FieldStatus)
+				fieldSeen[flight.FieldStatus] = struct{}{}
+			}
+		case "availableSlots":
+			if _, ok := fieldSeen[flight.FieldAvailableSlots]; !ok {
+				selectedFields = append(selectedFields, flight.FieldAvailableSlots)
+				fieldSeen[flight.FieldAvailableSlots] = struct{}{}
+			}
+		case "returnDate":
+			if _, ok := fieldSeen[flight.FieldReturnDate]; !ok {
+				selectedFields = append(selectedFields, flight.FieldReturnDate)
+				fieldSeen[flight.FieldReturnDate] = struct{}{}
+			}
+		case "flightPlane":
+			if _, ok := fieldSeen[flight.FieldFlightPlane]; !ok {
+				selectedFields = append(selectedFields, flight.FieldFlightPlane)
+				fieldSeen[flight.FieldFlightPlane] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[flight.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, flight.FieldCreatedAt)
+				fieldSeen[flight.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[flight.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, flight.FieldUpdatedAt)
+				fieldSeen[flight.FieldUpdatedAt] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		f.Select(selectedFields...)
+	}
+	return nil
+}
+
+type flightPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []FlightPaginateOption
+}
+
+func newFlightPaginateArgs(rv map[string]interface{}) *flightPaginateArgs {
+	args := &flightPaginateArgs{}
 	if rv == nil {
 		return args
 	}

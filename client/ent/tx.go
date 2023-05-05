@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
+	// Flight is the client for interacting with the Flight builders.
+	Flight *FlightClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Customer = NewCustomerClient(tx.config)
+	tx.Flight = NewFlightClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

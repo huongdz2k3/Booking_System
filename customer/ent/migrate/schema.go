@@ -11,7 +11,7 @@ var (
 	// CustomersColumns holds the columns for the "customers" table.
 	CustomersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Size: 8},
+		{Name: "name", Type: field.TypeString},
 		{Name: "phone_number", Type: field.TypeString, Size: 10},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "license_id", Type: field.TypeString, Unique: true},

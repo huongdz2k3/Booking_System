@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package booking;
+
+import "google/protobuf/timestamp.proto";
+
+message Booking {
+  int32 id = 9;
+  string booking_code = 1;
+  google.protobuf.Timestamp booking_date = 2;
+  google.protobuf.Timestamp cancel_date = 3 ;
+  google.protobuf.Timestamp created_at = 4 ;
+  google.protobuf.Timestamp updated_at = 5 ;
+  int32 flight_id = 6;
+  int32 customer_id = 7;
+  Status status = 8;
+}
+
+message CreateBookingInput{
+  google.protobuf.Timestamp booking_date = 2;
+  int32 flight_id = 6;
+  int32 customer_id = 7;
+}
+message ViewBookingInput{
+  string booking_code = 1;
+  int32 customer_id = 2;
+}
+
+message CancelBookingInput{
+  string booking_code = 1;
+  int32 customer_id = 2;
+}
+
+message GetBookingsHistoryInput{
+  int32 customer_id = 2;
+}
+
+
+
+message SearchBookingInput{
+  string email = 2;
+  string license_id = 3;
+  string booking_code = 1;
+}
+
+message GetBookingsHistoryResponse{
+  repeated Booking bookings = 1;
+}
+
+enum Status {
+  CANCEL = 0;
+  SUCCESS = 1;
+  PROCESS = 2;
+}
+
+service BookingService{
+  rpc CreateBooking(CreateBookingInput) returns (Booking);
+  rpc ViewBooking(ViewBookingInput) returns (Booking);
+  rpc CancelBooking(CancelBookingInput) returns(Booking);
+  rpc GetBookingsHistory(GetBookingsHistoryInput) returns (GetBookingsHistoryResponse);
+  rpc SearchBooking(SearchBookingInput) returns(Booking);
+}
