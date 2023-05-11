@@ -8,6 +8,18 @@ import (
 	"fmt"
 )
 
+// The BookingFunc type is an adapter to allow the use of ordinary
+// function as Booking mutator.
+type BookingFunc func(context.Context, *ent.BookingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BookingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BookingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BookingMutation", m)
+}
+
 // The CustomerFunc type is an adapter to allow the use of ordinary
 // function as Customer mutator.
 type CustomerFunc func(context.Context, *ent.CustomerMutation) (ent.Value, error)

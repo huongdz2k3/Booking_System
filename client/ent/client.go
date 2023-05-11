@@ -10,6 +10,7 @@ import (
 
 	"customer/ent/migrate"
 
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 
@@ -23,6 +24,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Booking is the client for interacting with the Booking builders.
+	Booking *BookingClient
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
 	// Flight is the client for interacting with the Flight builders.
@@ -42,6 +45,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Booking = NewBookingClient(c.config)
 	c.Customer = NewCustomerClient(c.config)
 	c.Flight = NewFlightClient(c.config)
 }
@@ -126,6 +130,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:      ctx,
 		config:   cfg,
+		Booking:  NewBookingClient(cfg),
 		Customer: NewCustomerClient(cfg),
 		Flight:   NewFlightClient(cfg),
 	}, nil
@@ -147,6 +152,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:      ctx,
 		config:   cfg,
+		Booking:  NewBookingClient(cfg),
 		Customer: NewCustomerClient(cfg),
 		Flight:   NewFlightClient(cfg),
 	}, nil
@@ -155,7 +161,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Customer.
+//		Booking.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -177,6 +183,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Booking.Use(hooks...)
 	c.Customer.Use(hooks...)
 	c.Flight.Use(hooks...)
 }
@@ -184,6 +191,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Booking.Intercept(interceptors...)
 	c.Customer.Intercept(interceptors...)
 	c.Flight.Intercept(interceptors...)
 }
@@ -191,12 +199,132 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *BookingMutation:
+		return c.Booking.mutate(ctx, m)
 	case *CustomerMutation:
 		return c.Customer.mutate(ctx, m)
 	case *FlightMutation:
 		return c.Flight.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// BookingClient is a client for the Booking schema.
+type BookingClient struct {
+	config
+}
+
+// NewBookingClient returns a client for the Booking from the given config.
+func NewBookingClient(c config) *BookingClient {
+	return &BookingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `booking.Hooks(f(g(h())))`.
+func (c *BookingClient) Use(hooks ...Hook) {
+	c.hooks.Booking = append(c.hooks.Booking, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `booking.Intercept(f(g(h())))`.
+func (c *BookingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Booking = append(c.inters.Booking, interceptors...)
+}
+
+// Create returns a builder for creating a Booking entity.
+func (c *BookingClient) Create() *BookingCreate {
+	mutation := newBookingMutation(c.config, OpCreate)
+	return &BookingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Booking entities.
+func (c *BookingClient) CreateBulk(builders ...*BookingCreate) *BookingCreateBulk {
+	return &BookingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Booking.
+func (c *BookingClient) Update() *BookingUpdate {
+	mutation := newBookingMutation(c.config, OpUpdate)
+	return &BookingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BookingClient) UpdateOne(b *Booking) *BookingUpdateOne {
+	mutation := newBookingMutation(c.config, OpUpdateOne, withBooking(b))
+	return &BookingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BookingClient) UpdateOneID(id int) *BookingUpdateOne {
+	mutation := newBookingMutation(c.config, OpUpdateOne, withBookingID(id))
+	return &BookingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Booking.
+func (c *BookingClient) Delete() *BookingDelete {
+	mutation := newBookingMutation(c.config, OpDelete)
+	return &BookingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BookingClient) DeleteOne(b *Booking) *BookingDeleteOne {
+	return c.DeleteOneID(b.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BookingClient) DeleteOneID(id int) *BookingDeleteOne {
+	builder := c.Delete().Where(booking.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BookingDeleteOne{builder}
+}
+
+// Query returns a query builder for Booking.
+func (c *BookingClient) Query() *BookingQuery {
+	return &BookingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBooking},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Booking entity by its id.
+func (c *BookingClient) Get(ctx context.Context, id int) (*Booking, error) {
+	return c.Query().Where(booking.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BookingClient) GetX(ctx context.Context, id int) *Booking {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *BookingClient) Hooks() []Hook {
+	return c.hooks.Booking
+}
+
+// Interceptors returns the client interceptors.
+func (c *BookingClient) Interceptors() []Interceptor {
+	return c.inters.Booking
+}
+
+func (c *BookingClient) mutate(ctx context.Context, m *BookingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BookingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BookingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BookingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BookingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Booking mutation op: %q", m.Op())
 	}
 }
 
@@ -439,9 +567,9 @@ func (c *FlightClient) mutate(ctx context.Context, m *FlightMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Customer, Flight []ent.Hook
+		Booking, Customer, Flight []ent.Hook
 	}
 	inters struct {
-		Customer, Flight []ent.Interceptor
+		Booking, Customer, Flight []ent.Interceptor
 	}
 )

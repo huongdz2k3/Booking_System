@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 	"customer/ent/schema"
@@ -13,6 +14,46 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	bookingFields := schema.Booking{}.Fields()
+	_ = bookingFields
+	// bookingDescBookingCode is the schema descriptor for booking_code field.
+	bookingDescBookingCode := bookingFields[0].Descriptor()
+	// booking.BookingCodeValidator is a validator for the "booking_code" field. It is called by the builders before save.
+	booking.BookingCodeValidator = bookingDescBookingCode.Validators[0].(func(string) error)
+	// bookingDescCreatedAt is the schema descriptor for created_at field.
+	bookingDescCreatedAt := bookingFields[3].Descriptor()
+	// booking.DefaultCreatedAt holds the default value on creation for the created_at field.
+	booking.DefaultCreatedAt = bookingDescCreatedAt.Default.(time.Time)
+	// bookingDescUpdatedAt is the schema descriptor for updated_at field.
+	bookingDescUpdatedAt := bookingFields[4].Descriptor()
+	// booking.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	booking.DefaultUpdatedAt = bookingDescUpdatedAt.Default.(time.Time)
+	// bookingDescFlightID is the schema descriptor for flight_id field.
+	bookingDescFlightID := bookingFields[5].Descriptor()
+	// booking.FlightIDValidator is a validator for the "flight_id" field. It is called by the builders before save.
+	booking.FlightIDValidator = bookingDescFlightID.Validators[0].(func(int) error)
+	// bookingDescCustomerID is the schema descriptor for customer_id field.
+	bookingDescCustomerID := bookingFields[6].Descriptor()
+	// booking.CustomerIDValidator is a validator for the "customer_id" field. It is called by the builders before save.
+	booking.CustomerIDValidator = bookingDescCustomerID.Validators[0].(func(int) error)
+	// bookingDescLicenseID is the schema descriptor for license_id field.
+	bookingDescLicenseID := bookingFields[12].Descriptor()
+	// booking.LicenseIDValidator is a validator for the "license_id" field. It is called by the builders before save.
+	booking.LicenseIDValidator = func() func(string) error {
+		validators := bookingDescLicenseID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(license_id string) error {
+			for _, fn := range fns {
+				if err := fn(license_id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	customerFields := schema.Customer{}.Fields()
 	_ = customerFields
 	// customerDescName is the schema descriptor for name field.
@@ -106,11 +147,11 @@ func init() {
 	// flight.AvailableSlotsValidator is a validator for the "available_slots" field. It is called by the builders before save.
 	flight.AvailableSlotsValidator = flightDescAvailableSlots.Validators[0].(func(int) error)
 	// flightDescCreatedAt is the schema descriptor for created_at field.
-	flightDescCreatedAt := flightFields[9].Descriptor()
+	flightDescCreatedAt := flightFields[10].Descriptor()
 	// flight.DefaultCreatedAt holds the default value on creation for the created_at field.
 	flight.DefaultCreatedAt = flightDescCreatedAt.Default.(time.Time)
 	// flightDescUpdatedAt is the schema descriptor for updated_at field.
-	flightDescUpdatedAt := flightFields[10].Descriptor()
+	flightDescUpdatedAt := flightFields[11].Descriptor()
 	// flight.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	flight.DefaultUpdatedAt = flightDescUpdatedAt.Default.(time.Time)
 }

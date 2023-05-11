@@ -13,12 +13,18 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "booking_code", Type: field.TypeString},
 		{Name: "booking_date", Type: field.TypeTime},
-		{Name: "cancel_date", Type: field.TypeTime},
+		{Name: "cancel_date", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "flight_id", Type: field.TypeInt},
-		{Name: "customer_id", Type: field.TypeInt},
+		{Name: "customer_id", Type: field.TypeInt, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"CANCEL", "SUCCESS", "PROCESS"}, Default: "PROCESS"},
+		{Name: "customer_name", Type: field.TypeString},
+		{Name: "phone_number", Type: field.TypeString},
+		{Name: "dob", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "license_id", Type: field.TypeString, Size: 10},
+		{Name: "address", Type: field.TypeString},
 	}
 	// BookingsTable holds the schema information for the "bookings" table.
 	BookingsTable = &schema.Table{

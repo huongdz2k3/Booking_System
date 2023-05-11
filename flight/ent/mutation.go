@@ -38,10 +38,11 @@ type FlightMutation struct {
 	to                 *string
 	depart_date        *time.Time
 	depart_time        *time.Time
-	return_date        *time.Time
-	status             *string
+	status             *flight.Status
 	available_slots    *int
 	addavailable_slots *int
+	return_date        *time.Time
+	_type              *flight.Type
 	flight_plane       *string
 	created_at         *time.Time
 	updated_at         *time.Time
@@ -329,49 +330,13 @@ func (m *FlightMutation) ResetDepartTime() {
 	m.depart_time = nil
 }
 
-// SetReturnDate sets the "return_date" field.
-func (m *FlightMutation) SetReturnDate(t time.Time) {
-	m.return_date = &t
-}
-
-// ReturnDate returns the value of the "return_date" field in the mutation.
-func (m *FlightMutation) ReturnDate() (r time.Time, exists bool) {
-	v := m.return_date
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldReturnDate returns the old "return_date" field's value of the Flight entity.
-// If the Flight object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FlightMutation) OldReturnDate(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldReturnDate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldReturnDate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldReturnDate: %w", err)
-	}
-	return oldValue.ReturnDate, nil
-}
-
-// ResetReturnDate resets all changes to the "return_date" field.
-func (m *FlightMutation) ResetReturnDate() {
-	m.return_date = nil
-}
-
 // SetStatus sets the "status" field.
-func (m *FlightMutation) SetStatus(s string) {
-	m.status = &s
+func (m *FlightMutation) SetStatus(f flight.Status) {
+	m.status = &f
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *FlightMutation) Status() (r string, exists bool) {
+func (m *FlightMutation) Status() (r flight.Status, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -382,7 +347,7 @@ func (m *FlightMutation) Status() (r string, exists bool) {
 // OldStatus returns the old "status" field's value of the Flight entity.
 // If the Flight object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FlightMutation) OldStatus(ctx context.Context) (v string, err error) {
+func (m *FlightMutation) OldStatus(ctx context.Context) (v flight.Status, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -455,6 +420,91 @@ func (m *FlightMutation) AddedAvailableSlots() (r int, exists bool) {
 func (m *FlightMutation) ResetAvailableSlots() {
 	m.available_slots = nil
 	m.addavailable_slots = nil
+}
+
+// SetReturnDate sets the "return_date" field.
+func (m *FlightMutation) SetReturnDate(t time.Time) {
+	m.return_date = &t
+}
+
+// ReturnDate returns the value of the "return_date" field in the mutation.
+func (m *FlightMutation) ReturnDate() (r time.Time, exists bool) {
+	v := m.return_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReturnDate returns the old "return_date" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldReturnDate(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReturnDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReturnDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReturnDate: %w", err)
+	}
+	return oldValue.ReturnDate, nil
+}
+
+// ClearReturnDate clears the value of the "return_date" field.
+func (m *FlightMutation) ClearReturnDate() {
+	m.return_date = nil
+	m.clearedFields[flight.FieldReturnDate] = struct{}{}
+}
+
+// ReturnDateCleared returns if the "return_date" field was cleared in this mutation.
+func (m *FlightMutation) ReturnDateCleared() bool {
+	_, ok := m.clearedFields[flight.FieldReturnDate]
+	return ok
+}
+
+// ResetReturnDate resets all changes to the "return_date" field.
+func (m *FlightMutation) ResetReturnDate() {
+	m.return_date = nil
+	delete(m.clearedFields, flight.FieldReturnDate)
+}
+
+// SetType sets the "type" field.
+func (m *FlightMutation) SetType(f flight.Type) {
+	m._type = &f
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *FlightMutation) GetType() (r flight.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldType(ctx context.Context) (v flight.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *FlightMutation) ResetType() {
+	m._type = nil
 }
 
 // SetFlightPlane sets the "flight_plane" field.
@@ -599,7 +649,7 @@ func (m *FlightMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FlightMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.name != nil {
 		fields = append(fields, flight.FieldName)
 	}
@@ -615,14 +665,17 @@ func (m *FlightMutation) Fields() []string {
 	if m.depart_time != nil {
 		fields = append(fields, flight.FieldDepartTime)
 	}
-	if m.return_date != nil {
-		fields = append(fields, flight.FieldReturnDate)
-	}
 	if m.status != nil {
 		fields = append(fields, flight.FieldStatus)
 	}
 	if m.available_slots != nil {
 		fields = append(fields, flight.FieldAvailableSlots)
+	}
+	if m.return_date != nil {
+		fields = append(fields, flight.FieldReturnDate)
+	}
+	if m._type != nil {
+		fields = append(fields, flight.FieldType)
 	}
 	if m.flight_plane != nil {
 		fields = append(fields, flight.FieldFlightPlane)
@@ -651,12 +704,14 @@ func (m *FlightMutation) Field(name string) (ent.Value, bool) {
 		return m.DepartDate()
 	case flight.FieldDepartTime:
 		return m.DepartTime()
-	case flight.FieldReturnDate:
-		return m.ReturnDate()
 	case flight.FieldStatus:
 		return m.Status()
 	case flight.FieldAvailableSlots:
 		return m.AvailableSlots()
+	case flight.FieldReturnDate:
+		return m.ReturnDate()
+	case flight.FieldType:
+		return m.GetType()
 	case flight.FieldFlightPlane:
 		return m.FlightPlane()
 	case flight.FieldCreatedAt:
@@ -682,12 +737,14 @@ func (m *FlightMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldDepartDate(ctx)
 	case flight.FieldDepartTime:
 		return m.OldDepartTime(ctx)
-	case flight.FieldReturnDate:
-		return m.OldReturnDate(ctx)
 	case flight.FieldStatus:
 		return m.OldStatus(ctx)
 	case flight.FieldAvailableSlots:
 		return m.OldAvailableSlots(ctx)
+	case flight.FieldReturnDate:
+		return m.OldReturnDate(ctx)
+	case flight.FieldType:
+		return m.OldType(ctx)
 	case flight.FieldFlightPlane:
 		return m.OldFlightPlane(ctx)
 	case flight.FieldCreatedAt:
@@ -738,15 +795,8 @@ func (m *FlightMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDepartTime(v)
 		return nil
-	case flight.FieldReturnDate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetReturnDate(v)
-		return nil
 	case flight.FieldStatus:
-		v, ok := value.(string)
+		v, ok := value.(flight.Status)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -758,6 +808,20 @@ func (m *FlightMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAvailableSlots(v)
+		return nil
+	case flight.FieldReturnDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReturnDate(v)
+		return nil
+	case flight.FieldType:
+		v, ok := value.(flight.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
 		return nil
 	case flight.FieldFlightPlane:
 		v, ok := value.(string)
@@ -824,7 +888,11 @@ func (m *FlightMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *FlightMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(flight.FieldReturnDate) {
+		fields = append(fields, flight.FieldReturnDate)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -837,6 +905,11 @@ func (m *FlightMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *FlightMutation) ClearField(name string) error {
+	switch name {
+	case flight.FieldReturnDate:
+		m.ClearReturnDate()
+		return nil
+	}
 	return fmt.Errorf("unknown Flight nullable field %s", name)
 }
 
@@ -859,14 +932,17 @@ func (m *FlightMutation) ResetField(name string) error {
 	case flight.FieldDepartTime:
 		m.ResetDepartTime()
 		return nil
-	case flight.FieldReturnDate:
-		m.ResetReturnDate()
-		return nil
 	case flight.FieldStatus:
 		m.ResetStatus()
 		return nil
 	case flight.FieldAvailableSlots:
 		m.ResetAvailableSlots()
+		return nil
+	case flight.FieldReturnDate:
+		m.ResetReturnDate()
+		return nil
+	case flight.FieldType:
+		m.ResetType()
 		return nil
 	case flight.FieldFlightPlane:
 		m.ResetFlightPlane()

@@ -30,9 +30,21 @@ type Booking struct {
 	// FlightID holds the value of the "flight_id" field.
 	FlightID int `json:"flight_id,omitempty"`
 	// CustomerID holds the value of the "customer_id" field.
-	CustomerID int `json:"customer_id,omitempty"`
+	CustomerID *int `json:"customer_id,omitempty"`
 	// Status holds the value of the "status" field.
-	Status       booking.Status `json:"status,omitempty"`
+	Status booking.Status `json:"status,omitempty"`
+	// CustomerName holds the value of the "customer_name" field.
+	CustomerName *string `json:"customer_name,omitempty"`
+	// PhoneNumber holds the value of the "phone_number" field.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+	// Dob holds the value of the "dob" field.
+	Dob *string `json:"dob,omitempty"`
+	// Email holds the value of the "email" field.
+	Email *string `json:"email,omitempty"`
+	// LicenseID holds the value of the "license_id" field.
+	LicenseID *string `json:"license_id,omitempty"`
+	// Address holds the value of the "address" field.
+	Address      *string `json:"address,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -43,7 +55,7 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case booking.FieldID, booking.FieldFlightID, booking.FieldCustomerID:
 			values[i] = new(sql.NullInt64)
-		case booking.FieldBookingCode, booking.FieldStatus:
+		case booking.FieldBookingCode, booking.FieldStatus, booking.FieldCustomerName, booking.FieldPhoneNumber, booking.FieldDob, booking.FieldEmail, booking.FieldLicenseID, booking.FieldAddress:
 			values[i] = new(sql.NullString)
 		case booking.FieldBookingDate, booking.FieldCancelDate, booking.FieldCreatedAt, booking.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -109,13 +121,56 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field customer_id", values[i])
 			} else if value.Valid {
-				b.CustomerID = int(value.Int64)
+				b.CustomerID = new(int)
+				*b.CustomerID = int(value.Int64)
 			}
 		case booking.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				b.Status = booking.Status(value.String)
+			}
+		case booking.FieldCustomerName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field customer_name", values[i])
+			} else if value.Valid {
+				b.CustomerName = new(string)
+				*b.CustomerName = value.String
+			}
+		case booking.FieldPhoneNumber:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_number", values[i])
+			} else if value.Valid {
+				b.PhoneNumber = new(string)
+				*b.PhoneNumber = value.String
+			}
+		case booking.FieldDob:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dob", values[i])
+			} else if value.Valid {
+				b.Dob = new(string)
+				*b.Dob = value.String
+			}
+		case booking.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				b.Email = new(string)
+				*b.Email = value.String
+			}
+		case booking.FieldLicenseID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field license_id", values[i])
+			} else if value.Valid {
+				b.LicenseID = new(string)
+				*b.LicenseID = value.String
+			}
+		case booking.FieldAddress:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field address", values[i])
+			} else if value.Valid {
+				b.Address = new(string)
+				*b.Address = value.String
 			}
 		default:
 			b.selectValues.Set(columns[i], values[i])
@@ -173,11 +228,43 @@ func (b *Booking) String() string {
 	builder.WriteString("flight_id=")
 	builder.WriteString(fmt.Sprintf("%v", b.FlightID))
 	builder.WriteString(", ")
-	builder.WriteString("customer_id=")
-	builder.WriteString(fmt.Sprintf("%v", b.CustomerID))
+	if v := b.CustomerID; v != nil {
+		builder.WriteString("customer_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", b.Status))
+	builder.WriteString(", ")
+	if v := b.CustomerName; v != nil {
+		builder.WriteString("customer_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := b.PhoneNumber; v != nil {
+		builder.WriteString("phone_number=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := b.Dob; v != nil {
+		builder.WriteString("dob=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := b.Email; v != nil {
+		builder.WriteString("email=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := b.LicenseID; v != nil {
+		builder.WriteString("license_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := b.Address; v != nil {
+		builder.WriteString("address=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

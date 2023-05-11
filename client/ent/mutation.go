@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 	"customer/ent/predicate"
@@ -25,9 +26,1130 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeBooking  = "Booking"
 	TypeCustomer = "Customer"
 	TypeFlight   = "Flight"
 )
+
+// BookingMutation represents an operation that mutates the Booking nodes in the graph.
+type BookingMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	booking_code   *string
+	booking_date   *string
+	cancel_date    *string
+	created_at     *time.Time
+	updated_at     *time.Time
+	flight_id      *int
+	addflight_id   *int
+	customer_id    *int
+	addcustomer_id *int
+	status         *booking.Status
+	customer_name  *string
+	phone_number   *string
+	dob            *string
+	email          *string
+	license_id     *string
+	address        *string
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Booking, error)
+	predicates     []predicate.Booking
+}
+
+var _ ent.Mutation = (*BookingMutation)(nil)
+
+// bookingOption allows management of the mutation configuration using functional options.
+type bookingOption func(*BookingMutation)
+
+// newBookingMutation creates new mutation for the Booking entity.
+func newBookingMutation(c config, op Op, opts ...bookingOption) *BookingMutation {
+	m := &BookingMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBooking,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBookingID sets the ID field of the mutation.
+func withBookingID(id int) bookingOption {
+	return func(m *BookingMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Booking
+		)
+		m.oldValue = func(ctx context.Context) (*Booking, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Booking.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBooking sets the old Booking of the mutation.
+func withBooking(node *Booking) bookingOption {
+	return func(m *BookingMutation) {
+		m.oldValue = func(context.Context) (*Booking, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BookingMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BookingMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BookingMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BookingMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Booking.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetBookingCode sets the "booking_code" field.
+func (m *BookingMutation) SetBookingCode(s string) {
+	m.booking_code = &s
+}
+
+// BookingCode returns the value of the "booking_code" field in the mutation.
+func (m *BookingMutation) BookingCode() (r string, exists bool) {
+	v := m.booking_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBookingCode returns the old "booking_code" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldBookingCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBookingCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBookingCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBookingCode: %w", err)
+	}
+	return oldValue.BookingCode, nil
+}
+
+// ResetBookingCode resets all changes to the "booking_code" field.
+func (m *BookingMutation) ResetBookingCode() {
+	m.booking_code = nil
+}
+
+// SetBookingDate sets the "booking_date" field.
+func (m *BookingMutation) SetBookingDate(s string) {
+	m.booking_date = &s
+}
+
+// BookingDate returns the value of the "booking_date" field in the mutation.
+func (m *BookingMutation) BookingDate() (r string, exists bool) {
+	v := m.booking_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBookingDate returns the old "booking_date" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldBookingDate(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBookingDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBookingDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBookingDate: %w", err)
+	}
+	return oldValue.BookingDate, nil
+}
+
+// ResetBookingDate resets all changes to the "booking_date" field.
+func (m *BookingMutation) ResetBookingDate() {
+	m.booking_date = nil
+}
+
+// SetCancelDate sets the "cancel_date" field.
+func (m *BookingMutation) SetCancelDate(s string) {
+	m.cancel_date = &s
+}
+
+// CancelDate returns the value of the "cancel_date" field in the mutation.
+func (m *BookingMutation) CancelDate() (r string, exists bool) {
+	v := m.cancel_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCancelDate returns the old "cancel_date" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldCancelDate(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCancelDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCancelDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCancelDate: %w", err)
+	}
+	return oldValue.CancelDate, nil
+}
+
+// ResetCancelDate resets all changes to the "cancel_date" field.
+func (m *BookingMutation) ResetCancelDate() {
+	m.cancel_date = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *BookingMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *BookingMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *BookingMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *BookingMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *BookingMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *BookingMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetFlightID sets the "flight_id" field.
+func (m *BookingMutation) SetFlightID(i int) {
+	m.flight_id = &i
+	m.addflight_id = nil
+}
+
+// FlightID returns the value of the "flight_id" field in the mutation.
+func (m *BookingMutation) FlightID() (r int, exists bool) {
+	v := m.flight_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFlightID returns the old "flight_id" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldFlightID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFlightID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFlightID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFlightID: %w", err)
+	}
+	return oldValue.FlightID, nil
+}
+
+// AddFlightID adds i to the "flight_id" field.
+func (m *BookingMutation) AddFlightID(i int) {
+	if m.addflight_id != nil {
+		*m.addflight_id += i
+	} else {
+		m.addflight_id = &i
+	}
+}
+
+// AddedFlightID returns the value that was added to the "flight_id" field in this mutation.
+func (m *BookingMutation) AddedFlightID() (r int, exists bool) {
+	v := m.addflight_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFlightID resets all changes to the "flight_id" field.
+func (m *BookingMutation) ResetFlightID() {
+	m.flight_id = nil
+	m.addflight_id = nil
+}
+
+// SetCustomerID sets the "customer_id" field.
+func (m *BookingMutation) SetCustomerID(i int) {
+	m.customer_id = &i
+	m.addcustomer_id = nil
+}
+
+// CustomerID returns the value of the "customer_id" field in the mutation.
+func (m *BookingMutation) CustomerID() (r int, exists bool) {
+	v := m.customer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCustomerID returns the old "customer_id" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldCustomerID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCustomerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCustomerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCustomerID: %w", err)
+	}
+	return oldValue.CustomerID, nil
+}
+
+// AddCustomerID adds i to the "customer_id" field.
+func (m *BookingMutation) AddCustomerID(i int) {
+	if m.addcustomer_id != nil {
+		*m.addcustomer_id += i
+	} else {
+		m.addcustomer_id = &i
+	}
+}
+
+// AddedCustomerID returns the value that was added to the "customer_id" field in this mutation.
+func (m *BookingMutation) AddedCustomerID() (r int, exists bool) {
+	v := m.addcustomer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (m *BookingMutation) ClearCustomerID() {
+	m.customer_id = nil
+	m.addcustomer_id = nil
+	m.clearedFields[booking.FieldCustomerID] = struct{}{}
+}
+
+// CustomerIDCleared returns if the "customer_id" field was cleared in this mutation.
+func (m *BookingMutation) CustomerIDCleared() bool {
+	_, ok := m.clearedFields[booking.FieldCustomerID]
+	return ok
+}
+
+// ResetCustomerID resets all changes to the "customer_id" field.
+func (m *BookingMutation) ResetCustomerID() {
+	m.customer_id = nil
+	m.addcustomer_id = nil
+	delete(m.clearedFields, booking.FieldCustomerID)
+}
+
+// SetStatus sets the "status" field.
+func (m *BookingMutation) SetStatus(b booking.Status) {
+	m.status = &b
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *BookingMutation) Status() (r booking.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldStatus(ctx context.Context) (v booking.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *BookingMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCustomerName sets the "customer_name" field.
+func (m *BookingMutation) SetCustomerName(s string) {
+	m.customer_name = &s
+}
+
+// CustomerName returns the value of the "customer_name" field in the mutation.
+func (m *BookingMutation) CustomerName() (r string, exists bool) {
+	v := m.customer_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCustomerName returns the old "customer_name" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldCustomerName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCustomerName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCustomerName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCustomerName: %w", err)
+	}
+	return oldValue.CustomerName, nil
+}
+
+// ResetCustomerName resets all changes to the "customer_name" field.
+func (m *BookingMutation) ResetCustomerName() {
+	m.customer_name = nil
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (m *BookingMutation) SetPhoneNumber(s string) {
+	m.phone_number = &s
+}
+
+// PhoneNumber returns the value of the "phone_number" field in the mutation.
+func (m *BookingMutation) PhoneNumber() (r string, exists bool) {
+	v := m.phone_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhoneNumber returns the old "phone_number" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldPhoneNumber(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhoneNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhoneNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhoneNumber: %w", err)
+	}
+	return oldValue.PhoneNumber, nil
+}
+
+// ResetPhoneNumber resets all changes to the "phone_number" field.
+func (m *BookingMutation) ResetPhoneNumber() {
+	m.phone_number = nil
+}
+
+// SetDob sets the "dob" field.
+func (m *BookingMutation) SetDob(s string) {
+	m.dob = &s
+}
+
+// Dob returns the value of the "dob" field in the mutation.
+func (m *BookingMutation) Dob() (r string, exists bool) {
+	v := m.dob
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDob returns the old "dob" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldDob(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDob is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDob requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDob: %w", err)
+	}
+	return oldValue.Dob, nil
+}
+
+// ResetDob resets all changes to the "dob" field.
+func (m *BookingMutation) ResetDob() {
+	m.dob = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *BookingMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *BookingMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldEmail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *BookingMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetLicenseID sets the "license_id" field.
+func (m *BookingMutation) SetLicenseID(s string) {
+	m.license_id = &s
+}
+
+// LicenseID returns the value of the "license_id" field in the mutation.
+func (m *BookingMutation) LicenseID() (r string, exists bool) {
+	v := m.license_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLicenseID returns the old "license_id" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldLicenseID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLicenseID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLicenseID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLicenseID: %w", err)
+	}
+	return oldValue.LicenseID, nil
+}
+
+// ResetLicenseID resets all changes to the "license_id" field.
+func (m *BookingMutation) ResetLicenseID() {
+	m.license_id = nil
+}
+
+// SetAddress sets the "address" field.
+func (m *BookingMutation) SetAddress(s string) {
+	m.address = &s
+}
+
+// Address returns the value of the "address" field in the mutation.
+func (m *BookingMutation) Address() (r string, exists bool) {
+	v := m.address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddress returns the old "address" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldAddress(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddress: %w", err)
+	}
+	return oldValue.Address, nil
+}
+
+// ResetAddress resets all changes to the "address" field.
+func (m *BookingMutation) ResetAddress() {
+	m.address = nil
+}
+
+// Where appends a list predicates to the BookingMutation builder.
+func (m *BookingMutation) Where(ps ...predicate.Booking) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BookingMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BookingMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Booking, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BookingMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BookingMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Booking).
+func (m *BookingMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BookingMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.booking_code != nil {
+		fields = append(fields, booking.FieldBookingCode)
+	}
+	if m.booking_date != nil {
+		fields = append(fields, booking.FieldBookingDate)
+	}
+	if m.cancel_date != nil {
+		fields = append(fields, booking.FieldCancelDate)
+	}
+	if m.created_at != nil {
+		fields = append(fields, booking.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, booking.FieldUpdatedAt)
+	}
+	if m.flight_id != nil {
+		fields = append(fields, booking.FieldFlightID)
+	}
+	if m.customer_id != nil {
+		fields = append(fields, booking.FieldCustomerID)
+	}
+	if m.status != nil {
+		fields = append(fields, booking.FieldStatus)
+	}
+	if m.customer_name != nil {
+		fields = append(fields, booking.FieldCustomerName)
+	}
+	if m.phone_number != nil {
+		fields = append(fields, booking.FieldPhoneNumber)
+	}
+	if m.dob != nil {
+		fields = append(fields, booking.FieldDob)
+	}
+	if m.email != nil {
+		fields = append(fields, booking.FieldEmail)
+	}
+	if m.license_id != nil {
+		fields = append(fields, booking.FieldLicenseID)
+	}
+	if m.address != nil {
+		fields = append(fields, booking.FieldAddress)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BookingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case booking.FieldBookingCode:
+		return m.BookingCode()
+	case booking.FieldBookingDate:
+		return m.BookingDate()
+	case booking.FieldCancelDate:
+		return m.CancelDate()
+	case booking.FieldCreatedAt:
+		return m.CreatedAt()
+	case booking.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case booking.FieldFlightID:
+		return m.FlightID()
+	case booking.FieldCustomerID:
+		return m.CustomerID()
+	case booking.FieldStatus:
+		return m.Status()
+	case booking.FieldCustomerName:
+		return m.CustomerName()
+	case booking.FieldPhoneNumber:
+		return m.PhoneNumber()
+	case booking.FieldDob:
+		return m.Dob()
+	case booking.FieldEmail:
+		return m.Email()
+	case booking.FieldLicenseID:
+		return m.LicenseID()
+	case booking.FieldAddress:
+		return m.Address()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case booking.FieldBookingCode:
+		return m.OldBookingCode(ctx)
+	case booking.FieldBookingDate:
+		return m.OldBookingDate(ctx)
+	case booking.FieldCancelDate:
+		return m.OldCancelDate(ctx)
+	case booking.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case booking.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case booking.FieldFlightID:
+		return m.OldFlightID(ctx)
+	case booking.FieldCustomerID:
+		return m.OldCustomerID(ctx)
+	case booking.FieldStatus:
+		return m.OldStatus(ctx)
+	case booking.FieldCustomerName:
+		return m.OldCustomerName(ctx)
+	case booking.FieldPhoneNumber:
+		return m.OldPhoneNumber(ctx)
+	case booking.FieldDob:
+		return m.OldDob(ctx)
+	case booking.FieldEmail:
+		return m.OldEmail(ctx)
+	case booking.FieldLicenseID:
+		return m.OldLicenseID(ctx)
+	case booking.FieldAddress:
+		return m.OldAddress(ctx)
+	}
+	return nil, fmt.Errorf("unknown Booking field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BookingMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case booking.FieldBookingCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBookingCode(v)
+		return nil
+	case booking.FieldBookingDate:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBookingDate(v)
+		return nil
+	case booking.FieldCancelDate:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCancelDate(v)
+		return nil
+	case booking.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case booking.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case booking.FieldFlightID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFlightID(v)
+		return nil
+	case booking.FieldCustomerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCustomerID(v)
+		return nil
+	case booking.FieldStatus:
+		v, ok := value.(booking.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case booking.FieldCustomerName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCustomerName(v)
+		return nil
+	case booking.FieldPhoneNumber:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhoneNumber(v)
+		return nil
+	case booking.FieldDob:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDob(v)
+		return nil
+	case booking.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case booking.FieldLicenseID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLicenseID(v)
+		return nil
+	case booking.FieldAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddress(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Booking field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BookingMutation) AddedFields() []string {
+	var fields []string
+	if m.addflight_id != nil {
+		fields = append(fields, booking.FieldFlightID)
+	}
+	if m.addcustomer_id != nil {
+		fields = append(fields, booking.FieldCustomerID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case booking.FieldFlightID:
+		return m.AddedFlightID()
+	case booking.FieldCustomerID:
+		return m.AddedCustomerID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BookingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case booking.FieldFlightID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFlightID(v)
+		return nil
+	case booking.FieldCustomerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCustomerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Booking numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BookingMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(booking.FieldCustomerID) {
+		fields = append(fields, booking.FieldCustomerID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BookingMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BookingMutation) ClearField(name string) error {
+	switch name {
+	case booking.FieldCustomerID:
+		m.ClearCustomerID()
+		return nil
+	}
+	return fmt.Errorf("unknown Booking nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BookingMutation) ResetField(name string) error {
+	switch name {
+	case booking.FieldBookingCode:
+		m.ResetBookingCode()
+		return nil
+	case booking.FieldBookingDate:
+		m.ResetBookingDate()
+		return nil
+	case booking.FieldCancelDate:
+		m.ResetCancelDate()
+		return nil
+	case booking.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case booking.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case booking.FieldFlightID:
+		m.ResetFlightID()
+		return nil
+	case booking.FieldCustomerID:
+		m.ResetCustomerID()
+		return nil
+	case booking.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case booking.FieldCustomerName:
+		m.ResetCustomerName()
+		return nil
+	case booking.FieldPhoneNumber:
+		m.ResetPhoneNumber()
+		return nil
+	case booking.FieldDob:
+		m.ResetDob()
+		return nil
+	case booking.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case booking.FieldLicenseID:
+		m.ResetLicenseID()
+		return nil
+	case booking.FieldAddress:
+		m.ResetAddress()
+		return nil
+	}
+	return fmt.Errorf("unknown Booking field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BookingMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BookingMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BookingMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BookingMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BookingMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BookingMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BookingMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Booking unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BookingMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Booking edge %s", name)
+}
 
 // CustomerMutation represents an operation that mutates the Customer nodes in the graph.
 type CustomerMutation struct {
@@ -940,12 +2062,13 @@ type FlightMutation struct {
 	name               *string
 	from               *string
 	to                 *string
-	depart_date        *time.Time
-	depart_time        *time.Time
+	depart_date        *string
+	depart_time        *string
 	status             *flight.Status
 	available_slots    *int
 	addavailable_slots *int
-	return_date        *time.Time
+	return_date        *string
+	_type              *flight.Type
 	flight_plane       *string
 	created_at         *time.Time
 	updated_at         *time.Time
@@ -1162,12 +2285,12 @@ func (m *FlightMutation) ResetTo() {
 }
 
 // SetDepartDate sets the "depart_date" field.
-func (m *FlightMutation) SetDepartDate(t time.Time) {
-	m.depart_date = &t
+func (m *FlightMutation) SetDepartDate(s string) {
+	m.depart_date = &s
 }
 
 // DepartDate returns the value of the "depart_date" field in the mutation.
-func (m *FlightMutation) DepartDate() (r time.Time, exists bool) {
+func (m *FlightMutation) DepartDate() (r string, exists bool) {
 	v := m.depart_date
 	if v == nil {
 		return
@@ -1178,7 +2301,7 @@ func (m *FlightMutation) DepartDate() (r time.Time, exists bool) {
 // OldDepartDate returns the old "depart_date" field's value of the Flight entity.
 // If the Flight object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FlightMutation) OldDepartDate(ctx context.Context) (v time.Time, err error) {
+func (m *FlightMutation) OldDepartDate(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDepartDate is only allowed on UpdateOne operations")
 	}
@@ -1198,12 +2321,12 @@ func (m *FlightMutation) ResetDepartDate() {
 }
 
 // SetDepartTime sets the "depart_time" field.
-func (m *FlightMutation) SetDepartTime(t time.Time) {
-	m.depart_time = &t
+func (m *FlightMutation) SetDepartTime(s string) {
+	m.depart_time = &s
 }
 
 // DepartTime returns the value of the "depart_time" field in the mutation.
-func (m *FlightMutation) DepartTime() (r time.Time, exists bool) {
+func (m *FlightMutation) DepartTime() (r string, exists bool) {
 	v := m.depart_time
 	if v == nil {
 		return
@@ -1214,7 +2337,7 @@ func (m *FlightMutation) DepartTime() (r time.Time, exists bool) {
 // OldDepartTime returns the old "depart_time" field's value of the Flight entity.
 // If the Flight object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FlightMutation) OldDepartTime(ctx context.Context) (v time.Time, err error) {
+func (m *FlightMutation) OldDepartTime(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDepartTime is only allowed on UpdateOne operations")
 	}
@@ -1326,12 +2449,12 @@ func (m *FlightMutation) ResetAvailableSlots() {
 }
 
 // SetReturnDate sets the "return_date" field.
-func (m *FlightMutation) SetReturnDate(t time.Time) {
-	m.return_date = &t
+func (m *FlightMutation) SetReturnDate(s string) {
+	m.return_date = &s
 }
 
 // ReturnDate returns the value of the "return_date" field in the mutation.
-func (m *FlightMutation) ReturnDate() (r time.Time, exists bool) {
+func (m *FlightMutation) ReturnDate() (r string, exists bool) {
 	v := m.return_date
 	if v == nil {
 		return
@@ -1342,7 +2465,7 @@ func (m *FlightMutation) ReturnDate() (r time.Time, exists bool) {
 // OldReturnDate returns the old "return_date" field's value of the Flight entity.
 // If the Flight object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FlightMutation) OldReturnDate(ctx context.Context) (v *time.Time, err error) {
+func (m *FlightMutation) OldReturnDate(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReturnDate is only allowed on UpdateOne operations")
 	}
@@ -1356,9 +2479,58 @@ func (m *FlightMutation) OldReturnDate(ctx context.Context) (v *time.Time, err e
 	return oldValue.ReturnDate, nil
 }
 
+// ClearReturnDate clears the value of the "return_date" field.
+func (m *FlightMutation) ClearReturnDate() {
+	m.return_date = nil
+	m.clearedFields[flight.FieldReturnDate] = struct{}{}
+}
+
+// ReturnDateCleared returns if the "return_date" field was cleared in this mutation.
+func (m *FlightMutation) ReturnDateCleared() bool {
+	_, ok := m.clearedFields[flight.FieldReturnDate]
+	return ok
+}
+
 // ResetReturnDate resets all changes to the "return_date" field.
 func (m *FlightMutation) ResetReturnDate() {
 	m.return_date = nil
+	delete(m.clearedFields, flight.FieldReturnDate)
+}
+
+// SetType sets the "type" field.
+func (m *FlightMutation) SetType(f flight.Type) {
+	m._type = &f
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *FlightMutation) GetType() (r flight.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldType(ctx context.Context) (v flight.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *FlightMutation) ResetType() {
+	m._type = nil
 }
 
 // SetFlightPlane sets the "flight_plane" field.
@@ -1503,7 +2675,7 @@ func (m *FlightMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FlightMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.name != nil {
 		fields = append(fields, flight.FieldName)
 	}
@@ -1527,6 +2699,9 @@ func (m *FlightMutation) Fields() []string {
 	}
 	if m.return_date != nil {
 		fields = append(fields, flight.FieldReturnDate)
+	}
+	if m._type != nil {
+		fields = append(fields, flight.FieldType)
 	}
 	if m.flight_plane != nil {
 		fields = append(fields, flight.FieldFlightPlane)
@@ -1561,6 +2736,8 @@ func (m *FlightMutation) Field(name string) (ent.Value, bool) {
 		return m.AvailableSlots()
 	case flight.FieldReturnDate:
 		return m.ReturnDate()
+	case flight.FieldType:
+		return m.GetType()
 	case flight.FieldFlightPlane:
 		return m.FlightPlane()
 	case flight.FieldCreatedAt:
@@ -1592,6 +2769,8 @@ func (m *FlightMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldAvailableSlots(ctx)
 	case flight.FieldReturnDate:
 		return m.OldReturnDate(ctx)
+	case flight.FieldType:
+		return m.OldType(ctx)
 	case flight.FieldFlightPlane:
 		return m.OldFlightPlane(ctx)
 	case flight.FieldCreatedAt:
@@ -1629,14 +2808,14 @@ func (m *FlightMutation) SetField(name string, value ent.Value) error {
 		m.SetTo(v)
 		return nil
 	case flight.FieldDepartDate:
-		v, ok := value.(time.Time)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDepartDate(v)
 		return nil
 	case flight.FieldDepartTime:
-		v, ok := value.(time.Time)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1657,11 +2836,18 @@ func (m *FlightMutation) SetField(name string, value ent.Value) error {
 		m.SetAvailableSlots(v)
 		return nil
 	case flight.FieldReturnDate:
-		v, ok := value.(time.Time)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReturnDate(v)
+		return nil
+	case flight.FieldType:
+		v, ok := value.(flight.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
 		return nil
 	case flight.FieldFlightPlane:
 		v, ok := value.(string)
@@ -1728,7 +2914,11 @@ func (m *FlightMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *FlightMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(flight.FieldReturnDate) {
+		fields = append(fields, flight.FieldReturnDate)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1741,6 +2931,11 @@ func (m *FlightMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *FlightMutation) ClearField(name string) error {
+	switch name {
+	case flight.FieldReturnDate:
+		m.ClearReturnDate()
+		return nil
+	}
 	return fmt.Errorf("unknown Flight nullable field %s", name)
 }
 
@@ -1771,6 +2966,9 @@ func (m *FlightMutation) ResetField(name string) error {
 		return nil
 	case flight.FieldReturnDate:
 		m.ResetReturnDate()
+		return nil
+	case flight.FieldType:
+		m.ResetType()
 		return nil
 	case flight.FieldFlightPlane:
 		m.ResetFlightPlane()

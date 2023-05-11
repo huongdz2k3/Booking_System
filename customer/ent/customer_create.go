@@ -287,7 +287,7 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := cc.mutation.MembershipNumber(); ok {
 		_spec.SetField(customer.FieldMembershipNumber, field.TypeInt, value)
-		_node.MembershipNumber = value
+		_node.MembershipNumber = &value
 	}
 	if value, ok := cc.mutation.IsActive(); ok {
 		_spec.SetField(customer.FieldIsActive, field.TypeBool, value)

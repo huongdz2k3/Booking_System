@@ -47,14 +47,14 @@ func (fu *FlightUpdate) SetTo(s string) *FlightUpdate {
 }
 
 // SetDepartDate sets the "depart_date" field.
-func (fu *FlightUpdate) SetDepartDate(t time.Time) *FlightUpdate {
-	fu.mutation.SetDepartDate(t)
+func (fu *FlightUpdate) SetDepartDate(s string) *FlightUpdate {
+	fu.mutation.SetDepartDate(s)
 	return fu
 }
 
 // SetDepartTime sets the "depart_time" field.
-func (fu *FlightUpdate) SetDepartTime(t time.Time) *FlightUpdate {
-	fu.mutation.SetDepartTime(t)
+func (fu *FlightUpdate) SetDepartTime(s string) *FlightUpdate {
+	fu.mutation.SetDepartTime(s)
 	return fu
 }
 
@@ -86,8 +86,28 @@ func (fu *FlightUpdate) AddAvailableSlots(i int) *FlightUpdate {
 }
 
 // SetReturnDate sets the "return_date" field.
-func (fu *FlightUpdate) SetReturnDate(t time.Time) *FlightUpdate {
-	fu.mutation.SetReturnDate(t)
+func (fu *FlightUpdate) SetReturnDate(s string) *FlightUpdate {
+	fu.mutation.SetReturnDate(s)
+	return fu
+}
+
+// SetNillableReturnDate sets the "return_date" field if the given value is not nil.
+func (fu *FlightUpdate) SetNillableReturnDate(s *string) *FlightUpdate {
+	if s != nil {
+		fu.SetReturnDate(*s)
+	}
+	return fu
+}
+
+// ClearReturnDate clears the value of the "return_date" field.
+func (fu *FlightUpdate) ClearReturnDate() *FlightUpdate {
+	fu.mutation.ClearReturnDate()
+	return fu
+}
+
+// SetType sets the "type" field.
+func (fu *FlightUpdate) SetType(f flight.Type) *FlightUpdate {
+	fu.mutation.SetType(f)
 	return fu
 }
 
@@ -169,6 +189,11 @@ func (fu *FlightUpdate) check() error {
 			return &ValidationError{Name: "available_slots", err: fmt.Errorf(`ent: validator failed for field "Flight.available_slots": %w`, err)}
 		}
 	}
+	if v, ok := fu.mutation.GetType(); ok {
+		if err := flight.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Flight.type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -194,10 +219,10 @@ func (fu *FlightUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(flight.FieldTo, field.TypeString, value)
 	}
 	if value, ok := fu.mutation.DepartDate(); ok {
-		_spec.SetField(flight.FieldDepartDate, field.TypeTime, value)
+		_spec.SetField(flight.FieldDepartDate, field.TypeString, value)
 	}
 	if value, ok := fu.mutation.DepartTime(); ok {
-		_spec.SetField(flight.FieldDepartTime, field.TypeTime, value)
+		_spec.SetField(flight.FieldDepartTime, field.TypeString, value)
 	}
 	if value, ok := fu.mutation.Status(); ok {
 		_spec.SetField(flight.FieldStatus, field.TypeEnum, value)
@@ -209,7 +234,13 @@ func (fu *FlightUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddField(flight.FieldAvailableSlots, field.TypeInt, value)
 	}
 	if value, ok := fu.mutation.ReturnDate(); ok {
-		_spec.SetField(flight.FieldReturnDate, field.TypeTime, value)
+		_spec.SetField(flight.FieldReturnDate, field.TypeString, value)
+	}
+	if fu.mutation.ReturnDateCleared() {
+		_spec.ClearField(flight.FieldReturnDate, field.TypeString)
+	}
+	if value, ok := fu.mutation.GetType(); ok {
+		_spec.SetField(flight.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := fu.mutation.FlightPlane(); ok {
 		_spec.SetField(flight.FieldFlightPlane, field.TypeString, value)
@@ -259,14 +290,14 @@ func (fuo *FlightUpdateOne) SetTo(s string) *FlightUpdateOne {
 }
 
 // SetDepartDate sets the "depart_date" field.
-func (fuo *FlightUpdateOne) SetDepartDate(t time.Time) *FlightUpdateOne {
-	fuo.mutation.SetDepartDate(t)
+func (fuo *FlightUpdateOne) SetDepartDate(s string) *FlightUpdateOne {
+	fuo.mutation.SetDepartDate(s)
 	return fuo
 }
 
 // SetDepartTime sets the "depart_time" field.
-func (fuo *FlightUpdateOne) SetDepartTime(t time.Time) *FlightUpdateOne {
-	fuo.mutation.SetDepartTime(t)
+func (fuo *FlightUpdateOne) SetDepartTime(s string) *FlightUpdateOne {
+	fuo.mutation.SetDepartTime(s)
 	return fuo
 }
 
@@ -298,8 +329,28 @@ func (fuo *FlightUpdateOne) AddAvailableSlots(i int) *FlightUpdateOne {
 }
 
 // SetReturnDate sets the "return_date" field.
-func (fuo *FlightUpdateOne) SetReturnDate(t time.Time) *FlightUpdateOne {
-	fuo.mutation.SetReturnDate(t)
+func (fuo *FlightUpdateOne) SetReturnDate(s string) *FlightUpdateOne {
+	fuo.mutation.SetReturnDate(s)
+	return fuo
+}
+
+// SetNillableReturnDate sets the "return_date" field if the given value is not nil.
+func (fuo *FlightUpdateOne) SetNillableReturnDate(s *string) *FlightUpdateOne {
+	if s != nil {
+		fuo.SetReturnDate(*s)
+	}
+	return fuo
+}
+
+// ClearReturnDate clears the value of the "return_date" field.
+func (fuo *FlightUpdateOne) ClearReturnDate() *FlightUpdateOne {
+	fuo.mutation.ClearReturnDate()
+	return fuo
+}
+
+// SetType sets the "type" field.
+func (fuo *FlightUpdateOne) SetType(f flight.Type) *FlightUpdateOne {
+	fuo.mutation.SetType(f)
 	return fuo
 }
 
@@ -394,6 +445,11 @@ func (fuo *FlightUpdateOne) check() error {
 			return &ValidationError{Name: "available_slots", err: fmt.Errorf(`ent: validator failed for field "Flight.available_slots": %w`, err)}
 		}
 	}
+	if v, ok := fuo.mutation.GetType(); ok {
+		if err := flight.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Flight.type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -436,10 +492,10 @@ func (fuo *FlightUpdateOne) sqlSave(ctx context.Context) (_node *Flight, err err
 		_spec.SetField(flight.FieldTo, field.TypeString, value)
 	}
 	if value, ok := fuo.mutation.DepartDate(); ok {
-		_spec.SetField(flight.FieldDepartDate, field.TypeTime, value)
+		_spec.SetField(flight.FieldDepartDate, field.TypeString, value)
 	}
 	if value, ok := fuo.mutation.DepartTime(); ok {
-		_spec.SetField(flight.FieldDepartTime, field.TypeTime, value)
+		_spec.SetField(flight.FieldDepartTime, field.TypeString, value)
 	}
 	if value, ok := fuo.mutation.Status(); ok {
 		_spec.SetField(flight.FieldStatus, field.TypeEnum, value)
@@ -451,7 +507,13 @@ func (fuo *FlightUpdateOne) sqlSave(ctx context.Context) (_node *Flight, err err
 		_spec.AddField(flight.FieldAvailableSlots, field.TypeInt, value)
 	}
 	if value, ok := fuo.mutation.ReturnDate(); ok {
-		_spec.SetField(flight.FieldReturnDate, field.TypeTime, value)
+		_spec.SetField(flight.FieldReturnDate, field.TypeString, value)
+	}
+	if fuo.mutation.ReturnDateCleared() {
+		_spec.ClearField(flight.FieldReturnDate, field.TypeString)
+	}
+	if value, ok := fuo.mutation.GetType(); ok {
+		_spec.SetField(flight.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := fuo.mutation.FlightPlane(); ok {
 		_spec.SetField(flight.FieldFlightPlane, field.TypeString, value)

@@ -101,6 +101,10 @@ type PageInfo {
   """
   endCursor: Cursor
 }
+input PaginateInput{
+    size: Int!
+    page: Int!
+}
 
 type PaginationInfo {
   size: Int
@@ -121,19 +125,23 @@ type Flight implements Node {
   name: String!
   from: String!
   to: String!
-  depart_time: Time!
-  depart_date: Time!
+  depart_time: String!
+  depart_date: String!
+  return_date: String
   status: FlightStatus!
   available_slots: Int!
   flight_plane: String!
+  type: FlightType!
 }
 
 input CreateFlightInput {
   name: String!
   from: String!
   to: String!
-  depart_time: Time!
-  depart_date: Time!
+  type: FlightType!
+  return_date: String
+  depart_time: String!
+  depart_date: String!
   available_slots: Int!
   flight_plane: String!
   status: FlightStatus!
@@ -143,8 +151,10 @@ input UpdateFlightInput {
   name: String
   from: String
   to: String
-  depart_time: Time
-  depart_date: Time
+  depart_time: String
+  depart_date: String
+  type: FlightType
+  return_date: String
   status: FlightStatus
   available_slots: Int
   flight_plane: String
@@ -153,8 +163,9 @@ input UpdateFlightInput {
 input SearchFlightInput {
   from: String!
   to: String!
-  return_date: Time!
-  depart_date: Time!
+  type: FlightType!
+  return_date: String!
+  depart_date: String!
   size: Int!
   page: Int!
 }
@@ -170,9 +181,67 @@ enum FlightStatus @goModel(model: "customer/ent/flight.Status") {
   CANCELLED
   SCHEDULED
 }
+
+enum FlightType @goModel(model: "customer/ent/flight.Type") {
+  ONE_WAY
+  RETURN_TICKET
+}
+
+enum BookingStatus @goModel(model: "customer/ent/booking.Status") {
+  SUCCESS
+  CANCEL
+  PROCESS
+}
+
+# Booking
+type Booking implements Node {
+  id: ID!
+  name: String!
+  customer_name: String!
+  customer_id: ID!
+  phone_number: String!
+  dob: String!
+  email: String!
+  license_id: String!
+  address: String!
+  flight: Flight!
+  booking_date: String!
+  status: BookingStatus!
+  booking_code: String!
+}
+
+type BookingHistoryResponse{
+  bookings: [Booking!]!
+  paginationInfo: PaginationInfo!
+}
+
+input CreateBookingInput {
+  customer_name: String!
+  phone_number: String!
+  dob: String!
+  email: String!
+  license_id: String!
+  address: String!
+  flight_id: Int!
+}
+
+input ViewBookingInput{
+    booking_code: String!
+    email: String!
+    license_id: String!
+}
+
+input CancelBookingInput{
+    booking_code: String!
+    email: String!
+    license_id: String!
+}
+
 type Query {
   customers: [Customer!]!
   SearchFlight(input: SearchFlightInput!): SearchFlightResponse!
+  ViewBooking(input : ViewBookingInput!): Booking!
+  GetBookingsHistory(input: PaginateInput) : BookingHistoryResponse! @auth @hasRole(roles: [ADMIN , SUBSCRIBER])
 }
 
 type Mutation {
@@ -194,6 +263,10 @@ type Mutation {
   UpdateFlight(id: ID!, input: UpdateFlightInput!): Flight!
     @auth
     @hasRole(roles: ADMIN)
+
+  #Booking Service
+  CreateBooking(input: CreateBookingInput!): Booking!
+  CancelBooking(input: CancelBookingInput!): Booking!
 }
 """
 The builtin Time type

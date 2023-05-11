@@ -121,11 +121,12 @@ type CreateFlightInput struct {
 	Name           string
 	From           string
 	To             string
-	DepartDate     time.Time
-	DepartTime     time.Time
+	DepartDate     string
+	DepartTime     string
 	Status         *flight.Status
 	AvailableSlots int
-	ReturnDate     time.Time
+	ReturnDate     *string
+	Type           flight.Type
 	FlightPlane    string
 	CreatedAt      *time.Time
 	UpdatedAt      *time.Time
@@ -142,7 +143,10 @@ func (i *CreateFlightInput) Mutate(m *FlightMutation) {
 		m.SetStatus(*v)
 	}
 	m.SetAvailableSlots(i.AvailableSlots)
-	m.SetReturnDate(i.ReturnDate)
+	if v := i.ReturnDate; v != nil {
+		m.SetReturnDate(*v)
+	}
+	m.SetType(i.Type)
 	m.SetFlightPlane(i.FlightPlane)
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
@@ -160,17 +164,19 @@ func (c *FlightCreate) SetInput(i CreateFlightInput) *FlightCreate {
 
 // UpdateFlightInput represents a mutation input for updating flights.
 type UpdateFlightInput struct {
-	Name           *string
-	From           *string
-	To             *string
-	DepartDate     *time.Time
-	DepartTime     *time.Time
-	Status         *flight.Status
-	AvailableSlots *int
-	ReturnDate     *time.Time
-	FlightPlane    *string
-	CreatedAt      *time.Time
-	UpdatedAt      *time.Time
+	Name            *string
+	From            *string
+	To              *string
+	DepartDate      *string
+	DepartTime      *string
+	Status          *flight.Status
+	AvailableSlots  *int
+	ClearReturnDate bool
+	ReturnDate      *string
+	Type            *flight.Type
+	FlightPlane     *string
+	CreatedAt       *time.Time
+	UpdatedAt       *time.Time
 }
 
 // Mutate applies the UpdateFlightInput on the FlightMutation builder.
@@ -196,8 +202,14 @@ func (i *UpdateFlightInput) Mutate(m *FlightMutation) {
 	if v := i.AvailableSlots; v != nil {
 		m.SetAvailableSlots(*v)
 	}
+	if i.ClearReturnDate {
+		m.ClearReturnDate()
+	}
 	if v := i.ReturnDate; v != nil {
 		m.SetReturnDate(*v)
+	}
+	if v := i.Type; v != nil {
+		m.SetType(*v)
 	}
 	if v := i.FlightPlane; v != nil {
 		m.SetFlightPlane(*v)

@@ -24,15 +24,17 @@ type Flight struct {
 	// To holds the value of the "to" field.
 	To string `json:"to,omitempty"`
 	// DepartDate holds the value of the "depart_date" field.
-	DepartDate time.Time `json:"depart_date,omitempty"`
+	DepartDate string `json:"depart_date,omitempty"`
 	// DepartTime holds the value of the "depart_time" field.
-	DepartTime time.Time `json:"depart_time,omitempty"`
+	DepartTime string `json:"depart_time,omitempty"`
 	// Status holds the value of the "status" field.
 	Status flight.Status `json:"status,omitempty"`
 	// AvailableSlots holds the value of the "available_slots" field.
 	AvailableSlots int `json:"available_slots,omitempty"`
 	// ReturnDate holds the value of the "return_date" field.
-	ReturnDate *time.Time `json:"return_date,omitempty"`
+	ReturnDate string `json:"return_date,omitempty"`
+	// Type holds the value of the "type" field.
+	Type flight.Type `json:"type,omitempty"`
 	// FlightPlane holds the value of the "flight_plane" field.
 	FlightPlane string `json:"flight_plane,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -49,9 +51,9 @@ func (*Flight) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case flight.FieldID, flight.FieldAvailableSlots:
 			values[i] = new(sql.NullInt64)
-		case flight.FieldName, flight.FieldFrom, flight.FieldTo, flight.FieldStatus, flight.FieldFlightPlane:
+		case flight.FieldName, flight.FieldFrom, flight.FieldTo, flight.FieldDepartDate, flight.FieldDepartTime, flight.FieldStatus, flight.FieldReturnDate, flight.FieldType, flight.FieldFlightPlane:
 			values[i] = new(sql.NullString)
-		case flight.FieldDepartDate, flight.FieldDepartTime, flight.FieldReturnDate, flight.FieldCreatedAt, flight.FieldUpdatedAt:
+		case flight.FieldCreatedAt, flight.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -93,16 +95,16 @@ func (f *Flight) assignValues(columns []string, values []any) error {
 				f.To = value.String
 			}
 		case flight.FieldDepartDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field depart_date", values[i])
 			} else if value.Valid {
-				f.DepartDate = value.Time
+				f.DepartDate = value.String
 			}
 		case flight.FieldDepartTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field depart_time", values[i])
 			} else if value.Valid {
-				f.DepartTime = value.Time
+				f.DepartTime = value.String
 			}
 		case flight.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -117,11 +119,16 @@ func (f *Flight) assignValues(columns []string, values []any) error {
 				f.AvailableSlots = int(value.Int64)
 			}
 		case flight.FieldReturnDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field return_date", values[i])
 			} else if value.Valid {
-				f.ReturnDate = new(time.Time)
-				*f.ReturnDate = value.Time
+				f.ReturnDate = value.String
+			}
+		case flight.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				f.Type = flight.Type(value.String)
 			}
 		case flight.FieldFlightPlane:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -187,10 +194,10 @@ func (f *Flight) String() string {
 	builder.WriteString(f.To)
 	builder.WriteString(", ")
 	builder.WriteString("depart_date=")
-	builder.WriteString(f.DepartDate.Format(time.ANSIC))
+	builder.WriteString(f.DepartDate)
 	builder.WriteString(", ")
 	builder.WriteString("depart_time=")
-	builder.WriteString(f.DepartTime.Format(time.ANSIC))
+	builder.WriteString(f.DepartTime)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", f.Status))
@@ -198,10 +205,11 @@ func (f *Flight) String() string {
 	builder.WriteString("available_slots=")
 	builder.WriteString(fmt.Sprintf("%v", f.AvailableSlots))
 	builder.WriteString(", ")
-	if v := f.ReturnDate; v != nil {
-		builder.WriteString("return_date=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("return_date=")
+	builder.WriteString(f.ReturnDate)
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", f.Type))
 	builder.WriteString(", ")
 	builder.WriteString("flight_plane=")
 	builder.WriteString(f.FlightPlane)

@@ -4,12 +4,142 @@ package ent
 
 import (
 	"context"
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 )
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (b *BookingQuery) CollectFields(ctx context.Context, satisfies ...string) (*BookingQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return b, nil
+	}
+	if err := b.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func (b *BookingQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(booking.Columns))
+		selectedFields = []string{booking.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "bookingCode":
+			if _, ok := fieldSeen[booking.FieldBookingCode]; !ok {
+				selectedFields = append(selectedFields, booking.FieldBookingCode)
+				fieldSeen[booking.FieldBookingCode] = struct{}{}
+			}
+		case "bookingDate":
+			if _, ok := fieldSeen[booking.FieldBookingDate]; !ok {
+				selectedFields = append(selectedFields, booking.FieldBookingDate)
+				fieldSeen[booking.FieldBookingDate] = struct{}{}
+			}
+		case "cancelDate":
+			if _, ok := fieldSeen[booking.FieldCancelDate]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCancelDate)
+				fieldSeen[booking.FieldCancelDate] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[booking.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCreatedAt)
+				fieldSeen[booking.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[booking.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, booking.FieldUpdatedAt)
+				fieldSeen[booking.FieldUpdatedAt] = struct{}{}
+			}
+		case "flightID":
+			if _, ok := fieldSeen[booking.FieldFlightID]; !ok {
+				selectedFields = append(selectedFields, booking.FieldFlightID)
+				fieldSeen[booking.FieldFlightID] = struct{}{}
+			}
+		case "customerID":
+			if _, ok := fieldSeen[booking.FieldCustomerID]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCustomerID)
+				fieldSeen[booking.FieldCustomerID] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[booking.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, booking.FieldStatus)
+				fieldSeen[booking.FieldStatus] = struct{}{}
+			}
+		case "customerName":
+			if _, ok := fieldSeen[booking.FieldCustomerName]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCustomerName)
+				fieldSeen[booking.FieldCustomerName] = struct{}{}
+			}
+		case "phoneNumber":
+			if _, ok := fieldSeen[booking.FieldPhoneNumber]; !ok {
+				selectedFields = append(selectedFields, booking.FieldPhoneNumber)
+				fieldSeen[booking.FieldPhoneNumber] = struct{}{}
+			}
+		case "dob":
+			if _, ok := fieldSeen[booking.FieldDob]; !ok {
+				selectedFields = append(selectedFields, booking.FieldDob)
+				fieldSeen[booking.FieldDob] = struct{}{}
+			}
+		case "email":
+			if _, ok := fieldSeen[booking.FieldEmail]; !ok {
+				selectedFields = append(selectedFields, booking.FieldEmail)
+				fieldSeen[booking.FieldEmail] = struct{}{}
+			}
+		case "licenseID":
+			if _, ok := fieldSeen[booking.FieldLicenseID]; !ok {
+				selectedFields = append(selectedFields, booking.FieldLicenseID)
+				fieldSeen[booking.FieldLicenseID] = struct{}{}
+			}
+		case "address":
+			if _, ok := fieldSeen[booking.FieldAddress]; !ok {
+				selectedFields = append(selectedFields, booking.FieldAddress)
+				fieldSeen[booking.FieldAddress] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		b.Select(selectedFields...)
+	}
+	return nil
+}
+
+type bookingPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []BookingPaginateOption
+}
+
+func newBookingPaginateArgs(rv map[string]interface{}) *bookingPaginateArgs {
+	args := &bookingPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	return args
+}
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (c *CustomerQuery) CollectFields(ctx context.Context, satisfies ...string) (*CustomerQuery, error) {
@@ -185,6 +315,11 @@ func (f *FlightQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			if _, ok := fieldSeen[flight.FieldReturnDate]; !ok {
 				selectedFields = append(selectedFields, flight.FieldReturnDate)
 				fieldSeen[flight.FieldReturnDate] = struct{}{}
+			}
+		case "type":
+			if _, ok := fieldSeen[flight.FieldType]; !ok {
+				selectedFields = append(selectedFields, flight.FieldType)
+				fieldSeen[flight.FieldType] = struct{}{}
 			}
 		case "flightPlane":
 			if _, ok := fieldSeen[flight.FieldFlightPlane]; !ok {

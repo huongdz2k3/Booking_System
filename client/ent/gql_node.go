@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 	"fmt"
@@ -23,6 +24,9 @@ import (
 type Noder interface {
 	IsNode()
 }
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Booking) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Customer) IsNode() {}
@@ -88,6 +92,18 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
+	case booking.Table:
+		query := c.Booking.Query().
+			Where(booking.ID(id))
+		query, err := query.CollectFields(ctx, "Booking")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case customer.Table:
 		query := c.Customer.Query().
 			Where(customer.ID(id))
@@ -185,6 +201,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case booking.Table:
+		query := c.Booking.Query().
+			Where(booking.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Booking")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case customer.Table:
 		query := c.Customer.Query().
 			Where(customer.IDIn(ids...))

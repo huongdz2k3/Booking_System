@@ -89,6 +89,36 @@ func CustomerID(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCustomerID, v))
 }
 
+// CustomerName applies equality check predicate on the "customer_name" field. It's identical to CustomerNameEQ.
+func CustomerName(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldCustomerName, v))
+}
+
+// PhoneNumber applies equality check predicate on the "phone_number" field. It's identical to PhoneNumberEQ.
+func PhoneNumber(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldPhoneNumber, v))
+}
+
+// Dob applies equality check predicate on the "dob" field. It's identical to DobEQ.
+func Dob(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldDob, v))
+}
+
+// Email applies equality check predicate on the "email" field. It's identical to EmailEQ.
+func Email(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldEmail, v))
+}
+
+// LicenseID applies equality check predicate on the "license_id" field. It's identical to LicenseIDEQ.
+func LicenseID(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldLicenseID, v))
+}
+
+// Address applies equality check predicate on the "address" field. It's identical to AddressEQ.
+func Address(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldAddress, v))
+}
+
 // BookingCodeEQ applies the EQ predicate on the "booking_code" field.
 func BookingCodeEQ(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldBookingCode, v))
@@ -232,6 +262,16 @@ func CancelDateLT(v time.Time) predicate.Booking {
 // CancelDateLTE applies the LTE predicate on the "cancel_date" field.
 func CancelDateLTE(v time.Time) predicate.Booking {
 	return predicate.Booking(sql.FieldLTE(FieldCancelDate, v))
+}
+
+// CancelDateIsNil applies the IsNil predicate on the "cancel_date" field.
+func CancelDateIsNil() predicate.Booking {
+	return predicate.Booking(sql.FieldIsNull(FieldCancelDate))
+}
+
+// CancelDateNotNil applies the NotNil predicate on the "cancel_date" field.
+func CancelDateNotNil() predicate.Booking {
+	return predicate.Booking(sql.FieldNotNull(FieldCancelDate))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -394,6 +434,16 @@ func CustomerIDLTE(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldLTE(FieldCustomerID, v))
 }
 
+// CustomerIDIsNil applies the IsNil predicate on the "customer_id" field.
+func CustomerIDIsNil() predicate.Booking {
+	return predicate.Booking(sql.FieldIsNull(FieldCustomerID))
+}
+
+// CustomerIDNotNil applies the NotNil predicate on the "customer_id" field.
+func CustomerIDNotNil() predicate.Booking {
+	return predicate.Booking(sql.FieldNotNull(FieldCustomerID))
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v Status) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
@@ -412,6 +462,396 @@ func StatusIn(vs ...Status) predicate.Booking {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.Booking {
 	return predicate.Booking(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// CustomerNameEQ applies the EQ predicate on the "customer_name" field.
+func CustomerNameEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldCustomerName, v))
+}
+
+// CustomerNameNEQ applies the NEQ predicate on the "customer_name" field.
+func CustomerNameNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldCustomerName, v))
+}
+
+// CustomerNameIn applies the In predicate on the "customer_name" field.
+func CustomerNameIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldCustomerName, vs...))
+}
+
+// CustomerNameNotIn applies the NotIn predicate on the "customer_name" field.
+func CustomerNameNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldCustomerName, vs...))
+}
+
+// CustomerNameGT applies the GT predicate on the "customer_name" field.
+func CustomerNameGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldCustomerName, v))
+}
+
+// CustomerNameGTE applies the GTE predicate on the "customer_name" field.
+func CustomerNameGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldCustomerName, v))
+}
+
+// CustomerNameLT applies the LT predicate on the "customer_name" field.
+func CustomerNameLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldCustomerName, v))
+}
+
+// CustomerNameLTE applies the LTE predicate on the "customer_name" field.
+func CustomerNameLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldCustomerName, v))
+}
+
+// CustomerNameContains applies the Contains predicate on the "customer_name" field.
+func CustomerNameContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldCustomerName, v))
+}
+
+// CustomerNameHasPrefix applies the HasPrefix predicate on the "customer_name" field.
+func CustomerNameHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldCustomerName, v))
+}
+
+// CustomerNameHasSuffix applies the HasSuffix predicate on the "customer_name" field.
+func CustomerNameHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldCustomerName, v))
+}
+
+// CustomerNameEqualFold applies the EqualFold predicate on the "customer_name" field.
+func CustomerNameEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldCustomerName, v))
+}
+
+// CustomerNameContainsFold applies the ContainsFold predicate on the "customer_name" field.
+func CustomerNameContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldCustomerName, v))
+}
+
+// PhoneNumberEQ applies the EQ predicate on the "phone_number" field.
+func PhoneNumberEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldPhoneNumber, v))
+}
+
+// PhoneNumberNEQ applies the NEQ predicate on the "phone_number" field.
+func PhoneNumberNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldPhoneNumber, v))
+}
+
+// PhoneNumberIn applies the In predicate on the "phone_number" field.
+func PhoneNumberIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldPhoneNumber, vs...))
+}
+
+// PhoneNumberNotIn applies the NotIn predicate on the "phone_number" field.
+func PhoneNumberNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldPhoneNumber, vs...))
+}
+
+// PhoneNumberGT applies the GT predicate on the "phone_number" field.
+func PhoneNumberGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldPhoneNumber, v))
+}
+
+// PhoneNumberGTE applies the GTE predicate on the "phone_number" field.
+func PhoneNumberGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldPhoneNumber, v))
+}
+
+// PhoneNumberLT applies the LT predicate on the "phone_number" field.
+func PhoneNumberLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldPhoneNumber, v))
+}
+
+// PhoneNumberLTE applies the LTE predicate on the "phone_number" field.
+func PhoneNumberLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldPhoneNumber, v))
+}
+
+// PhoneNumberContains applies the Contains predicate on the "phone_number" field.
+func PhoneNumberContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldPhoneNumber, v))
+}
+
+// PhoneNumberHasPrefix applies the HasPrefix predicate on the "phone_number" field.
+func PhoneNumberHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldPhoneNumber, v))
+}
+
+// PhoneNumberHasSuffix applies the HasSuffix predicate on the "phone_number" field.
+func PhoneNumberHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldPhoneNumber, v))
+}
+
+// PhoneNumberEqualFold applies the EqualFold predicate on the "phone_number" field.
+func PhoneNumberEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldPhoneNumber, v))
+}
+
+// PhoneNumberContainsFold applies the ContainsFold predicate on the "phone_number" field.
+func PhoneNumberContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldPhoneNumber, v))
+}
+
+// DobEQ applies the EQ predicate on the "dob" field.
+func DobEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldDob, v))
+}
+
+// DobNEQ applies the NEQ predicate on the "dob" field.
+func DobNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldDob, v))
+}
+
+// DobIn applies the In predicate on the "dob" field.
+func DobIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldDob, vs...))
+}
+
+// DobNotIn applies the NotIn predicate on the "dob" field.
+func DobNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldDob, vs...))
+}
+
+// DobGT applies the GT predicate on the "dob" field.
+func DobGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldDob, v))
+}
+
+// DobGTE applies the GTE predicate on the "dob" field.
+func DobGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldDob, v))
+}
+
+// DobLT applies the LT predicate on the "dob" field.
+func DobLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldDob, v))
+}
+
+// DobLTE applies the LTE predicate on the "dob" field.
+func DobLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldDob, v))
+}
+
+// DobContains applies the Contains predicate on the "dob" field.
+func DobContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldDob, v))
+}
+
+// DobHasPrefix applies the HasPrefix predicate on the "dob" field.
+func DobHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldDob, v))
+}
+
+// DobHasSuffix applies the HasSuffix predicate on the "dob" field.
+func DobHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldDob, v))
+}
+
+// DobEqualFold applies the EqualFold predicate on the "dob" field.
+func DobEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldDob, v))
+}
+
+// DobContainsFold applies the ContainsFold predicate on the "dob" field.
+func DobContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldDob, v))
+}
+
+// EmailEQ applies the EQ predicate on the "email" field.
+func EmailEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldEmail, v))
+}
+
+// EmailNEQ applies the NEQ predicate on the "email" field.
+func EmailNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldEmail, v))
+}
+
+// EmailIn applies the In predicate on the "email" field.
+func EmailIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldEmail, vs...))
+}
+
+// EmailNotIn applies the NotIn predicate on the "email" field.
+func EmailNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldEmail, vs...))
+}
+
+// EmailGT applies the GT predicate on the "email" field.
+func EmailGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldEmail, v))
+}
+
+// EmailGTE applies the GTE predicate on the "email" field.
+func EmailGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldEmail, v))
+}
+
+// EmailLT applies the LT predicate on the "email" field.
+func EmailLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldEmail, v))
+}
+
+// EmailLTE applies the LTE predicate on the "email" field.
+func EmailLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldEmail, v))
+}
+
+// EmailContains applies the Contains predicate on the "email" field.
+func EmailContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldEmail, v))
+}
+
+// EmailHasPrefix applies the HasPrefix predicate on the "email" field.
+func EmailHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldEmail, v))
+}
+
+// EmailHasSuffix applies the HasSuffix predicate on the "email" field.
+func EmailHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldEmail, v))
+}
+
+// EmailEqualFold applies the EqualFold predicate on the "email" field.
+func EmailEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldEmail, v))
+}
+
+// EmailContainsFold applies the ContainsFold predicate on the "email" field.
+func EmailContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldEmail, v))
+}
+
+// LicenseIDEQ applies the EQ predicate on the "license_id" field.
+func LicenseIDEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldLicenseID, v))
+}
+
+// LicenseIDNEQ applies the NEQ predicate on the "license_id" field.
+func LicenseIDNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldLicenseID, v))
+}
+
+// LicenseIDIn applies the In predicate on the "license_id" field.
+func LicenseIDIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldLicenseID, vs...))
+}
+
+// LicenseIDNotIn applies the NotIn predicate on the "license_id" field.
+func LicenseIDNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldLicenseID, vs...))
+}
+
+// LicenseIDGT applies the GT predicate on the "license_id" field.
+func LicenseIDGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldLicenseID, v))
+}
+
+// LicenseIDGTE applies the GTE predicate on the "license_id" field.
+func LicenseIDGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldLicenseID, v))
+}
+
+// LicenseIDLT applies the LT predicate on the "license_id" field.
+func LicenseIDLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldLicenseID, v))
+}
+
+// LicenseIDLTE applies the LTE predicate on the "license_id" field.
+func LicenseIDLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldLicenseID, v))
+}
+
+// LicenseIDContains applies the Contains predicate on the "license_id" field.
+func LicenseIDContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldLicenseID, v))
+}
+
+// LicenseIDHasPrefix applies the HasPrefix predicate on the "license_id" field.
+func LicenseIDHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldLicenseID, v))
+}
+
+// LicenseIDHasSuffix applies the HasSuffix predicate on the "license_id" field.
+func LicenseIDHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldLicenseID, v))
+}
+
+// LicenseIDEqualFold applies the EqualFold predicate on the "license_id" field.
+func LicenseIDEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldLicenseID, v))
+}
+
+// LicenseIDContainsFold applies the ContainsFold predicate on the "license_id" field.
+func LicenseIDContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldLicenseID, v))
+}
+
+// AddressEQ applies the EQ predicate on the "address" field.
+func AddressEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldAddress, v))
+}
+
+// AddressNEQ applies the NEQ predicate on the "address" field.
+func AddressNEQ(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldAddress, v))
+}
+
+// AddressIn applies the In predicate on the "address" field.
+func AddressIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldAddress, vs...))
+}
+
+// AddressNotIn applies the NotIn predicate on the "address" field.
+func AddressNotIn(vs ...string) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldAddress, vs...))
+}
+
+// AddressGT applies the GT predicate on the "address" field.
+func AddressGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldAddress, v))
+}
+
+// AddressGTE applies the GTE predicate on the "address" field.
+func AddressGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldAddress, v))
+}
+
+// AddressLT applies the LT predicate on the "address" field.
+func AddressLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldAddress, v))
+}
+
+// AddressLTE applies the LTE predicate on the "address" field.
+func AddressLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldAddress, v))
+}
+
+// AddressContains applies the Contains predicate on the "address" field.
+func AddressContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldAddress, v))
+}
+
+// AddressHasPrefix applies the HasPrefix predicate on the "address" field.
+func AddressHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldAddress, v))
+}
+
+// AddressHasSuffix applies the HasSuffix predicate on the "address" field.
+func AddressHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldAddress, v))
+}
+
+// AddressEqualFold applies the EqualFold predicate on the "address" field.
+func AddressEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldAddress, v))
+}
+
+// AddressContainsFold applies the ContainsFold predicate on the "address" field.
+func AddressContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldAddress, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -70,12 +70,12 @@ func To(v string) predicate.Flight {
 }
 
 // DepartDate applies equality check predicate on the "depart_date" field. It's identical to DepartDateEQ.
-func DepartDate(v time.Time) predicate.Flight {
+func DepartDate(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldDepartDate, v))
 }
 
 // DepartTime applies equality check predicate on the "depart_time" field. It's identical to DepartTimeEQ.
-func DepartTime(v time.Time) predicate.Flight {
+func DepartTime(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldDepartTime, v))
 }
 
@@ -85,7 +85,7 @@ func AvailableSlots(v int) predicate.Flight {
 }
 
 // ReturnDate applies equality check predicate on the "return_date" field. It's identical to ReturnDateEQ.
-func ReturnDate(v time.Time) predicate.Flight {
+func ReturnDate(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldReturnDate, v))
 }
 
@@ -300,83 +300,133 @@ func ToContainsFold(v string) predicate.Flight {
 }
 
 // DepartDateEQ applies the EQ predicate on the "depart_date" field.
-func DepartDateEQ(v time.Time) predicate.Flight {
+func DepartDateEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldDepartDate, v))
 }
 
 // DepartDateNEQ applies the NEQ predicate on the "depart_date" field.
-func DepartDateNEQ(v time.Time) predicate.Flight {
+func DepartDateNEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldNEQ(FieldDepartDate, v))
 }
 
 // DepartDateIn applies the In predicate on the "depart_date" field.
-func DepartDateIn(vs ...time.Time) predicate.Flight {
+func DepartDateIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldIn(FieldDepartDate, vs...))
 }
 
 // DepartDateNotIn applies the NotIn predicate on the "depart_date" field.
-func DepartDateNotIn(vs ...time.Time) predicate.Flight {
+func DepartDateNotIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldNotIn(FieldDepartDate, vs...))
 }
 
 // DepartDateGT applies the GT predicate on the "depart_date" field.
-func DepartDateGT(v time.Time) predicate.Flight {
+func DepartDateGT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGT(FieldDepartDate, v))
 }
 
 // DepartDateGTE applies the GTE predicate on the "depart_date" field.
-func DepartDateGTE(v time.Time) predicate.Flight {
+func DepartDateGTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGTE(FieldDepartDate, v))
 }
 
 // DepartDateLT applies the LT predicate on the "depart_date" field.
-func DepartDateLT(v time.Time) predicate.Flight {
+func DepartDateLT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLT(FieldDepartDate, v))
 }
 
 // DepartDateLTE applies the LTE predicate on the "depart_date" field.
-func DepartDateLTE(v time.Time) predicate.Flight {
+func DepartDateLTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLTE(FieldDepartDate, v))
 }
 
+// DepartDateContains applies the Contains predicate on the "depart_date" field.
+func DepartDateContains(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContains(FieldDepartDate, v))
+}
+
+// DepartDateHasPrefix applies the HasPrefix predicate on the "depart_date" field.
+func DepartDateHasPrefix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasPrefix(FieldDepartDate, v))
+}
+
+// DepartDateHasSuffix applies the HasSuffix predicate on the "depart_date" field.
+func DepartDateHasSuffix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasSuffix(FieldDepartDate, v))
+}
+
+// DepartDateEqualFold applies the EqualFold predicate on the "depart_date" field.
+func DepartDateEqualFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldEqualFold(FieldDepartDate, v))
+}
+
+// DepartDateContainsFold applies the ContainsFold predicate on the "depart_date" field.
+func DepartDateContainsFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContainsFold(FieldDepartDate, v))
+}
+
 // DepartTimeEQ applies the EQ predicate on the "depart_time" field.
-func DepartTimeEQ(v time.Time) predicate.Flight {
+func DepartTimeEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldDepartTime, v))
 }
 
 // DepartTimeNEQ applies the NEQ predicate on the "depart_time" field.
-func DepartTimeNEQ(v time.Time) predicate.Flight {
+func DepartTimeNEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldNEQ(FieldDepartTime, v))
 }
 
 // DepartTimeIn applies the In predicate on the "depart_time" field.
-func DepartTimeIn(vs ...time.Time) predicate.Flight {
+func DepartTimeIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldIn(FieldDepartTime, vs...))
 }
 
 // DepartTimeNotIn applies the NotIn predicate on the "depart_time" field.
-func DepartTimeNotIn(vs ...time.Time) predicate.Flight {
+func DepartTimeNotIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldNotIn(FieldDepartTime, vs...))
 }
 
 // DepartTimeGT applies the GT predicate on the "depart_time" field.
-func DepartTimeGT(v time.Time) predicate.Flight {
+func DepartTimeGT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGT(FieldDepartTime, v))
 }
 
 // DepartTimeGTE applies the GTE predicate on the "depart_time" field.
-func DepartTimeGTE(v time.Time) predicate.Flight {
+func DepartTimeGTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGTE(FieldDepartTime, v))
 }
 
 // DepartTimeLT applies the LT predicate on the "depart_time" field.
-func DepartTimeLT(v time.Time) predicate.Flight {
+func DepartTimeLT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLT(FieldDepartTime, v))
 }
 
 // DepartTimeLTE applies the LTE predicate on the "depart_time" field.
-func DepartTimeLTE(v time.Time) predicate.Flight {
+func DepartTimeLTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLTE(FieldDepartTime, v))
+}
+
+// DepartTimeContains applies the Contains predicate on the "depart_time" field.
+func DepartTimeContains(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContains(FieldDepartTime, v))
+}
+
+// DepartTimeHasPrefix applies the HasPrefix predicate on the "depart_time" field.
+func DepartTimeHasPrefix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasPrefix(FieldDepartTime, v))
+}
+
+// DepartTimeHasSuffix applies the HasSuffix predicate on the "depart_time" field.
+func DepartTimeHasSuffix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasSuffix(FieldDepartTime, v))
+}
+
+// DepartTimeEqualFold applies the EqualFold predicate on the "depart_time" field.
+func DepartTimeEqualFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldEqualFold(FieldDepartTime, v))
+}
+
+// DepartTimeContainsFold applies the ContainsFold predicate on the "depart_time" field.
+func DepartTimeContainsFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContainsFold(FieldDepartTime, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
@@ -440,43 +490,98 @@ func AvailableSlotsLTE(v int) predicate.Flight {
 }
 
 // ReturnDateEQ applies the EQ predicate on the "return_date" field.
-func ReturnDateEQ(v time.Time) predicate.Flight {
+func ReturnDateEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldReturnDate, v))
 }
 
 // ReturnDateNEQ applies the NEQ predicate on the "return_date" field.
-func ReturnDateNEQ(v time.Time) predicate.Flight {
+func ReturnDateNEQ(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldNEQ(FieldReturnDate, v))
 }
 
 // ReturnDateIn applies the In predicate on the "return_date" field.
-func ReturnDateIn(vs ...time.Time) predicate.Flight {
+func ReturnDateIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldIn(FieldReturnDate, vs...))
 }
 
 // ReturnDateNotIn applies the NotIn predicate on the "return_date" field.
-func ReturnDateNotIn(vs ...time.Time) predicate.Flight {
+func ReturnDateNotIn(vs ...string) predicate.Flight {
 	return predicate.Flight(sql.FieldNotIn(FieldReturnDate, vs...))
 }
 
 // ReturnDateGT applies the GT predicate on the "return_date" field.
-func ReturnDateGT(v time.Time) predicate.Flight {
+func ReturnDateGT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGT(FieldReturnDate, v))
 }
 
 // ReturnDateGTE applies the GTE predicate on the "return_date" field.
-func ReturnDateGTE(v time.Time) predicate.Flight {
+func ReturnDateGTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldGTE(FieldReturnDate, v))
 }
 
 // ReturnDateLT applies the LT predicate on the "return_date" field.
-func ReturnDateLT(v time.Time) predicate.Flight {
+func ReturnDateLT(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLT(FieldReturnDate, v))
 }
 
 // ReturnDateLTE applies the LTE predicate on the "return_date" field.
-func ReturnDateLTE(v time.Time) predicate.Flight {
+func ReturnDateLTE(v string) predicate.Flight {
 	return predicate.Flight(sql.FieldLTE(FieldReturnDate, v))
+}
+
+// ReturnDateContains applies the Contains predicate on the "return_date" field.
+func ReturnDateContains(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContains(FieldReturnDate, v))
+}
+
+// ReturnDateHasPrefix applies the HasPrefix predicate on the "return_date" field.
+func ReturnDateHasPrefix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasPrefix(FieldReturnDate, v))
+}
+
+// ReturnDateHasSuffix applies the HasSuffix predicate on the "return_date" field.
+func ReturnDateHasSuffix(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldHasSuffix(FieldReturnDate, v))
+}
+
+// ReturnDateIsNil applies the IsNil predicate on the "return_date" field.
+func ReturnDateIsNil() predicate.Flight {
+	return predicate.Flight(sql.FieldIsNull(FieldReturnDate))
+}
+
+// ReturnDateNotNil applies the NotNil predicate on the "return_date" field.
+func ReturnDateNotNil() predicate.Flight {
+	return predicate.Flight(sql.FieldNotNull(FieldReturnDate))
+}
+
+// ReturnDateEqualFold applies the EqualFold predicate on the "return_date" field.
+func ReturnDateEqualFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldEqualFold(FieldReturnDate, v))
+}
+
+// ReturnDateContainsFold applies the ContainsFold predicate on the "return_date" field.
+func ReturnDateContainsFold(v string) predicate.Flight {
+	return predicate.Flight(sql.FieldContainsFold(FieldReturnDate, v))
+}
+
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.Flight {
+	return predicate.Flight(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.Flight {
+	return predicate.Flight(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.Flight {
+	return predicate.Flight(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.Flight {
+	return predicate.Flight(sql.FieldNotIn(FieldType, vs...))
 }
 
 // FlightPlaneEQ applies the EQ predicate on the "flight_plane" field.

@@ -18,6 +18,10 @@ func init() {
 	bookingDescBookingCode := bookingFields[0].Descriptor()
 	// booking.BookingCodeValidator is a validator for the "booking_code" field. It is called by the builders before save.
 	booking.BookingCodeValidator = bookingDescBookingCode.Validators[0].(func(string) error)
+	// bookingDescBookingDate is the schema descriptor for booking_date field.
+	bookingDescBookingDate := bookingFields[1].Descriptor()
+	// booking.DefaultBookingDate holds the default value on creation for the booking_date field.
+	booking.DefaultBookingDate = bookingDescBookingDate.Default.(time.Time)
 	// bookingDescCreatedAt is the schema descriptor for created_at field.
 	bookingDescCreatedAt := bookingFields[3].Descriptor()
 	// booking.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -34,4 +38,22 @@ func init() {
 	bookingDescCustomerID := bookingFields[6].Descriptor()
 	// booking.CustomerIDValidator is a validator for the "customer_id" field. It is called by the builders before save.
 	booking.CustomerIDValidator = bookingDescCustomerID.Validators[0].(func(int) error)
+	// bookingDescLicenseID is the schema descriptor for license_id field.
+	bookingDescLicenseID := bookingFields[12].Descriptor()
+	// booking.LicenseIDValidator is a validator for the "license_id" field. It is called by the builders before save.
+	booking.LicenseIDValidator = func() func(string) error {
+		validators := bookingDescLicenseID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(license_id string) error {
+			for _, fn := range fns {
+				if err := fn(license_id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }

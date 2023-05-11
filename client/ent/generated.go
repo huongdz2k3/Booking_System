@@ -3,13 +3,34 @@
 package ent
 
 import (
-	"time"
+	"customer/ent/flight"
 )
+
+type BookingHistoryResponse struct {
+	Bookings       []*Booking      `json:"bookings"`
+	PaginationInfo *PaginationInfo `json:"paginationInfo"`
+}
+
+type CancelBookingInput struct {
+	BookingCode string `json:"booking_code"`
+	Email       string `json:"email"`
+	LicenseID   string `json:"license_id"`
+}
 
 type ChangePasswordInput struct {
 	OldPassword     string `json:"oldPassword"`
 	NewPassword     string `json:"newPassword"`
 	ConfirmPassword string `json:"confirmPassword"`
+}
+
+type CreateBookingInput struct {
+	CustomerName string `json:"customer_name"`
+	PhoneNumber  string `json:"phone_number"`
+	Dob          string `json:"dob"`
+	Email        string `json:"email"`
+	LicenseID    string `json:"license_id"`
+	Address      string `json:"address"`
+	FlightID     int    `json:"flight_id"`
 }
 
 type Jwt struct {
@@ -20,6 +41,11 @@ type Jwt struct {
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type PaginateInput struct {
+	Size int `json:"size"`
+	Page int `json:"page"`
 }
 
 type PaginationInfo struct {
@@ -40,15 +66,22 @@ type RegisterInput struct {
 }
 
 type SearchFlightInput struct {
-	From       string    `json:"from"`
-	To         string    `json:"to"`
-	ReturnDate time.Time `json:"return_date"`
-	DepartDate time.Time `json:"depart_date"`
-	Size       int       `json:"size"`
-	Page       int       `json:"page"`
+	From       string      `json:"from"`
+	To         string      `json:"to"`
+	Type       flight.Type `json:"type"`
+	ReturnDate string      `json:"return_date"`
+	DepartDate string      `json:"depart_date"`
+	Size       int         `json:"size"`
+	Page       int         `json:"page"`
 }
 
 type SearchFlightResponse struct {
 	Flights        []*Flight       `json:"flights"`
 	PaginationInfo *PaginationInfo `json:"paginationInfo"`
+}
+
+type ViewBookingInput struct {
+	BookingCode string `json:"booking_code"`
+	Email       string `json:"email"`
+	LicenseID   string `json:"license_id"`
 }

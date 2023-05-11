@@ -32,9 +32,25 @@ func (bc *BookingCreate) SetBookingDate(t time.Time) *BookingCreate {
 	return bc
 }
 
+// SetNillableBookingDate sets the "booking_date" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableBookingDate(t *time.Time) *BookingCreate {
+	if t != nil {
+		bc.SetBookingDate(*t)
+	}
+	return bc
+}
+
 // SetCancelDate sets the "cancel_date" field.
 func (bc *BookingCreate) SetCancelDate(t time.Time) *BookingCreate {
 	bc.mutation.SetCancelDate(t)
+	return bc
+}
+
+// SetNillableCancelDate sets the "cancel_date" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableCancelDate(t *time.Time) *BookingCreate {
+	if t != nil {
+		bc.SetCancelDate(*t)
+	}
 	return bc
 }
 
@@ -78,6 +94,14 @@ func (bc *BookingCreate) SetCustomerID(i int) *BookingCreate {
 	return bc
 }
 
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableCustomerID(i *int) *BookingCreate {
+	if i != nil {
+		bc.SetCustomerID(*i)
+	}
+	return bc
+}
+
 // SetStatus sets the "status" field.
 func (bc *BookingCreate) SetStatus(b booking.Status) *BookingCreate {
 	bc.mutation.SetStatus(b)
@@ -89,6 +113,42 @@ func (bc *BookingCreate) SetNillableStatus(b *booking.Status) *BookingCreate {
 	if b != nil {
 		bc.SetStatus(*b)
 	}
+	return bc
+}
+
+// SetCustomerName sets the "customer_name" field.
+func (bc *BookingCreate) SetCustomerName(s string) *BookingCreate {
+	bc.mutation.SetCustomerName(s)
+	return bc
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (bc *BookingCreate) SetPhoneNumber(s string) *BookingCreate {
+	bc.mutation.SetPhoneNumber(s)
+	return bc
+}
+
+// SetDob sets the "dob" field.
+func (bc *BookingCreate) SetDob(s string) *BookingCreate {
+	bc.mutation.SetDob(s)
+	return bc
+}
+
+// SetEmail sets the "email" field.
+func (bc *BookingCreate) SetEmail(s string) *BookingCreate {
+	bc.mutation.SetEmail(s)
+	return bc
+}
+
+// SetLicenseID sets the "license_id" field.
+func (bc *BookingCreate) SetLicenseID(s string) *BookingCreate {
+	bc.mutation.SetLicenseID(s)
+	return bc
+}
+
+// SetAddress sets the "address" field.
+func (bc *BookingCreate) SetAddress(s string) *BookingCreate {
+	bc.mutation.SetAddress(s)
 	return bc
 }
 
@@ -127,6 +187,10 @@ func (bc *BookingCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (bc *BookingCreate) defaults() {
+	if _, ok := bc.mutation.BookingDate(); !ok {
+		v := booking.DefaultBookingDate
+		bc.mutation.SetBookingDate(v)
+	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
 		v := booking.DefaultCreatedAt
 		bc.mutation.SetCreatedAt(v)
@@ -154,9 +218,6 @@ func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.BookingDate(); !ok {
 		return &ValidationError{Name: "booking_date", err: errors.New(`ent: missing required field "Booking.booking_date"`)}
 	}
-	if _, ok := bc.mutation.CancelDate(); !ok {
-		return &ValidationError{Name: "cancel_date", err: errors.New(`ent: missing required field "Booking.cancel_date"`)}
-	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Booking.created_at"`)}
 	}
@@ -171,9 +232,6 @@ func (bc *BookingCreate) check() error {
 			return &ValidationError{Name: "flight_id", err: fmt.Errorf(`ent: validator failed for field "Booking.flight_id": %w`, err)}
 		}
 	}
-	if _, ok := bc.mutation.CustomerID(); !ok {
-		return &ValidationError{Name: "customer_id", err: errors.New(`ent: missing required field "Booking.customer_id"`)}
-	}
 	if v, ok := bc.mutation.CustomerID(); ok {
 		if err := booking.CustomerIDValidator(v); err != nil {
 			return &ValidationError{Name: "customer_id", err: fmt.Errorf(`ent: validator failed for field "Booking.customer_id": %w`, err)}
@@ -186,6 +244,29 @@ func (bc *BookingCreate) check() error {
 		if err := booking.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
 		}
+	}
+	if _, ok := bc.mutation.CustomerName(); !ok {
+		return &ValidationError{Name: "customer_name", err: errors.New(`ent: missing required field "Booking.customer_name"`)}
+	}
+	if _, ok := bc.mutation.PhoneNumber(); !ok {
+		return &ValidationError{Name: "phone_number", err: errors.New(`ent: missing required field "Booking.phone_number"`)}
+	}
+	if _, ok := bc.mutation.Dob(); !ok {
+		return &ValidationError{Name: "dob", err: errors.New(`ent: missing required field "Booking.dob"`)}
+	}
+	if _, ok := bc.mutation.Email(); !ok {
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Booking.email"`)}
+	}
+	if _, ok := bc.mutation.LicenseID(); !ok {
+		return &ValidationError{Name: "license_id", err: errors.New(`ent: missing required field "Booking.license_id"`)}
+	}
+	if v, ok := bc.mutation.LicenseID(); ok {
+		if err := booking.LicenseIDValidator(v); err != nil {
+			return &ValidationError{Name: "license_id", err: fmt.Errorf(`ent: validator failed for field "Booking.license_id": %w`, err)}
+		}
+	}
+	if _, ok := bc.mutation.Address(); !ok {
+		return &ValidationError{Name: "address", err: errors.New(`ent: missing required field "Booking.address"`)}
 	}
 	return nil
 }
@@ -239,11 +320,35 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.CustomerID(); ok {
 		_spec.SetField(booking.FieldCustomerID, field.TypeInt, value)
-		_node.CustomerID = value
+		_node.CustomerID = &value
 	}
 	if value, ok := bc.mutation.Status(); ok {
 		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := bc.mutation.CustomerName(); ok {
+		_spec.SetField(booking.FieldCustomerName, field.TypeString, value)
+		_node.CustomerName = &value
+	}
+	if value, ok := bc.mutation.PhoneNumber(); ok {
+		_spec.SetField(booking.FieldPhoneNumber, field.TypeString, value)
+		_node.PhoneNumber = &value
+	}
+	if value, ok := bc.mutation.Dob(); ok {
+		_spec.SetField(booking.FieldDob, field.TypeString, value)
+		_node.Dob = &value
+	}
+	if value, ok := bc.mutation.Email(); ok {
+		_spec.SetField(booking.FieldEmail, field.TypeString, value)
+		_node.Email = &value
+	}
+	if value, ok := bc.mutation.LicenseID(); ok {
+		_spec.SetField(booking.FieldLicenseID, field.TypeString, value)
+		_node.LicenseID = &value
+	}
+	if value, ok := bc.mutation.Address(); ok {
+		_spec.SetField(booking.FieldAddress, field.TypeString, value)
+		_node.Address = &value
 	}
 	return _node, _spec
 }

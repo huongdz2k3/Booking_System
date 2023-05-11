@@ -30,6 +30,18 @@ const (
 	FieldCustomerID = "customer_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldCustomerName holds the string denoting the customer_name field in the database.
+	FieldCustomerName = "customer_name"
+	// FieldPhoneNumber holds the string denoting the phone_number field in the database.
+	FieldPhoneNumber = "phone_number"
+	// FieldDob holds the string denoting the dob field in the database.
+	FieldDob = "dob"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldLicenseID holds the string denoting the license_id field in the database.
+	FieldLicenseID = "license_id"
+	// FieldAddress holds the string denoting the address field in the database.
+	FieldAddress = "address"
 	// Table holds the table name of the booking in the database.
 	Table = "bookings"
 )
@@ -45,6 +57,12 @@ var Columns = []string{
 	FieldFlightID,
 	FieldCustomerID,
 	FieldStatus,
+	FieldCustomerName,
+	FieldPhoneNumber,
+	FieldDob,
+	FieldEmail,
+	FieldLicenseID,
+	FieldAddress,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,6 +78,8 @@ func ValidColumn(column string) bool {
 var (
 	// BookingCodeValidator is a validator for the "booking_code" field. It is called by the builders before save.
 	BookingCodeValidator func(string) error
+	// DefaultBookingDate holds the default value on creation for the "booking_date" field.
+	DefaultBookingDate time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -68,6 +88,8 @@ var (
 	FlightIDValidator func(int) error
 	// CustomerIDValidator is a validator for the "customer_id" field. It is called by the builders before save.
 	CustomerIDValidator func(int) error
+	// LicenseIDValidator is a validator for the "license_id" field. It is called by the builders before save.
+	LicenseIDValidator func(string) error
 )
 
 // Status defines the type for the "status" enum field.
@@ -143,4 +165,34 @@ func ByCustomerID(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByCustomerName orders the results by the customer_name field.
+func ByCustomerName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCustomerName, opts...).ToFunc()
+}
+
+// ByPhoneNumber orders the results by the phone_number field.
+func ByPhoneNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneNumber, opts...).ToFunc()
+}
+
+// ByDob orders the results by the dob field.
+func ByDob(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDob, opts...).ToFunc()
+}
+
+// ByEmail orders the results by the email field.
+func ByEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByLicenseID orders the results by the license_id field.
+func ByLicenseID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLicenseID, opts...).ToFunc()
+}
+
+// ByAddress orders the results by the address field.
+func ByAddress(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAddress, opts...).ToFunc()
 }

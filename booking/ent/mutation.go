@@ -43,6 +43,12 @@ type BookingMutation struct {
 	customer_id    *int
 	addcustomer_id *int
 	status         *booking.Status
+	customer_name  *string
+	phone_number   *string
+	dob            *string
+	email          *string
+	license_id     *string
+	address        *string
 	clearedFields  map[string]struct{}
 	done           bool
 	oldValue       func(context.Context) (*Booking, error)
@@ -250,9 +256,22 @@ func (m *BookingMutation) OldCancelDate(ctx context.Context) (v *time.Time, err 
 	return oldValue.CancelDate, nil
 }
 
+// ClearCancelDate clears the value of the "cancel_date" field.
+func (m *BookingMutation) ClearCancelDate() {
+	m.cancel_date = nil
+	m.clearedFields[booking.FieldCancelDate] = struct{}{}
+}
+
+// CancelDateCleared returns if the "cancel_date" field was cleared in this mutation.
+func (m *BookingMutation) CancelDateCleared() bool {
+	_, ok := m.clearedFields[booking.FieldCancelDate]
+	return ok
+}
+
 // ResetCancelDate resets all changes to the "cancel_date" field.
 func (m *BookingMutation) ResetCancelDate() {
 	m.cancel_date = nil
+	delete(m.clearedFields, booking.FieldCancelDate)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -401,7 +420,7 @@ func (m *BookingMutation) CustomerID() (r int, exists bool) {
 // OldCustomerID returns the old "customer_id" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldCustomerID(ctx context.Context) (v int, err error) {
+func (m *BookingMutation) OldCustomerID(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCustomerID is only allowed on UpdateOne operations")
 	}
@@ -433,10 +452,24 @@ func (m *BookingMutation) AddedCustomerID() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearCustomerID clears the value of the "customer_id" field.
+func (m *BookingMutation) ClearCustomerID() {
+	m.customer_id = nil
+	m.addcustomer_id = nil
+	m.clearedFields[booking.FieldCustomerID] = struct{}{}
+}
+
+// CustomerIDCleared returns if the "customer_id" field was cleared in this mutation.
+func (m *BookingMutation) CustomerIDCleared() bool {
+	_, ok := m.clearedFields[booking.FieldCustomerID]
+	return ok
+}
+
 // ResetCustomerID resets all changes to the "customer_id" field.
 func (m *BookingMutation) ResetCustomerID() {
 	m.customer_id = nil
 	m.addcustomer_id = nil
+	delete(m.clearedFields, booking.FieldCustomerID)
 }
 
 // SetStatus sets the "status" field.
@@ -475,6 +508,222 @@ func (m *BookingMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetCustomerName sets the "customer_name" field.
+func (m *BookingMutation) SetCustomerName(s string) {
+	m.customer_name = &s
+}
+
+// CustomerName returns the value of the "customer_name" field in the mutation.
+func (m *BookingMutation) CustomerName() (r string, exists bool) {
+	v := m.customer_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCustomerName returns the old "customer_name" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldCustomerName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCustomerName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCustomerName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCustomerName: %w", err)
+	}
+	return oldValue.CustomerName, nil
+}
+
+// ResetCustomerName resets all changes to the "customer_name" field.
+func (m *BookingMutation) ResetCustomerName() {
+	m.customer_name = nil
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (m *BookingMutation) SetPhoneNumber(s string) {
+	m.phone_number = &s
+}
+
+// PhoneNumber returns the value of the "phone_number" field in the mutation.
+func (m *BookingMutation) PhoneNumber() (r string, exists bool) {
+	v := m.phone_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhoneNumber returns the old "phone_number" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldPhoneNumber(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhoneNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhoneNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhoneNumber: %w", err)
+	}
+	return oldValue.PhoneNumber, nil
+}
+
+// ResetPhoneNumber resets all changes to the "phone_number" field.
+func (m *BookingMutation) ResetPhoneNumber() {
+	m.phone_number = nil
+}
+
+// SetDob sets the "dob" field.
+func (m *BookingMutation) SetDob(s string) {
+	m.dob = &s
+}
+
+// Dob returns the value of the "dob" field in the mutation.
+func (m *BookingMutation) Dob() (r string, exists bool) {
+	v := m.dob
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDob returns the old "dob" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldDob(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDob is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDob requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDob: %w", err)
+	}
+	return oldValue.Dob, nil
+}
+
+// ResetDob resets all changes to the "dob" field.
+func (m *BookingMutation) ResetDob() {
+	m.dob = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *BookingMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *BookingMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldEmail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *BookingMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetLicenseID sets the "license_id" field.
+func (m *BookingMutation) SetLicenseID(s string) {
+	m.license_id = &s
+}
+
+// LicenseID returns the value of the "license_id" field in the mutation.
+func (m *BookingMutation) LicenseID() (r string, exists bool) {
+	v := m.license_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLicenseID returns the old "license_id" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldLicenseID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLicenseID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLicenseID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLicenseID: %w", err)
+	}
+	return oldValue.LicenseID, nil
+}
+
+// ResetLicenseID resets all changes to the "license_id" field.
+func (m *BookingMutation) ResetLicenseID() {
+	m.license_id = nil
+}
+
+// SetAddress sets the "address" field.
+func (m *BookingMutation) SetAddress(s string) {
+	m.address = &s
+}
+
+// Address returns the value of the "address" field in the mutation.
+func (m *BookingMutation) Address() (r string, exists bool) {
+	v := m.address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddress returns the old "address" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldAddress(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddress: %w", err)
+	}
+	return oldValue.Address, nil
+}
+
+// ResetAddress resets all changes to the "address" field.
+func (m *BookingMutation) ResetAddress() {
+	m.address = nil
+}
+
 // Where appends a list predicates to the BookingMutation builder.
 func (m *BookingMutation) Where(ps ...predicate.Booking) {
 	m.predicates = append(m.predicates, ps...)
@@ -509,7 +758,7 @@ func (m *BookingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookingMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 14)
 	if m.booking_code != nil {
 		fields = append(fields, booking.FieldBookingCode)
 	}
@@ -533,6 +782,24 @@ func (m *BookingMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, booking.FieldStatus)
+	}
+	if m.customer_name != nil {
+		fields = append(fields, booking.FieldCustomerName)
+	}
+	if m.phone_number != nil {
+		fields = append(fields, booking.FieldPhoneNumber)
+	}
+	if m.dob != nil {
+		fields = append(fields, booking.FieldDob)
+	}
+	if m.email != nil {
+		fields = append(fields, booking.FieldEmail)
+	}
+	if m.license_id != nil {
+		fields = append(fields, booking.FieldLicenseID)
+	}
+	if m.address != nil {
+		fields = append(fields, booking.FieldAddress)
 	}
 	return fields
 }
@@ -558,6 +825,18 @@ func (m *BookingMutation) Field(name string) (ent.Value, bool) {
 		return m.CustomerID()
 	case booking.FieldStatus:
 		return m.Status()
+	case booking.FieldCustomerName:
+		return m.CustomerName()
+	case booking.FieldPhoneNumber:
+		return m.PhoneNumber()
+	case booking.FieldDob:
+		return m.Dob()
+	case booking.FieldEmail:
+		return m.Email()
+	case booking.FieldLicenseID:
+		return m.LicenseID()
+	case booking.FieldAddress:
+		return m.Address()
 	}
 	return nil, false
 }
@@ -583,6 +862,18 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldCustomerID(ctx)
 	case booking.FieldStatus:
 		return m.OldStatus(ctx)
+	case booking.FieldCustomerName:
+		return m.OldCustomerName(ctx)
+	case booking.FieldPhoneNumber:
+		return m.OldPhoneNumber(ctx)
+	case booking.FieldDob:
+		return m.OldDob(ctx)
+	case booking.FieldEmail:
+		return m.OldEmail(ctx)
+	case booking.FieldLicenseID:
+		return m.OldLicenseID(ctx)
+	case booking.FieldAddress:
+		return m.OldAddress(ctx)
 	}
 	return nil, fmt.Errorf("unknown Booking field %s", name)
 }
@@ -648,6 +939,48 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStatus(v)
 		return nil
+	case booking.FieldCustomerName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCustomerName(v)
+		return nil
+	case booking.FieldPhoneNumber:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhoneNumber(v)
+		return nil
+	case booking.FieldDob:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDob(v)
+		return nil
+	case booking.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case booking.FieldLicenseID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLicenseID(v)
+		return nil
+	case booking.FieldAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddress(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Booking field %s", name)
 }
@@ -704,7 +1037,14 @@ func (m *BookingMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *BookingMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(booking.FieldCancelDate) {
+		fields = append(fields, booking.FieldCancelDate)
+	}
+	if m.FieldCleared(booking.FieldCustomerID) {
+		fields = append(fields, booking.FieldCustomerID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -717,6 +1057,14 @@ func (m *BookingMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *BookingMutation) ClearField(name string) error {
+	switch name {
+	case booking.FieldCancelDate:
+		m.ClearCancelDate()
+		return nil
+	case booking.FieldCustomerID:
+		m.ClearCustomerID()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking nullable field %s", name)
 }
 
@@ -747,6 +1095,24 @@ func (m *BookingMutation) ResetField(name string) error {
 		return nil
 	case booking.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case booking.FieldCustomerName:
+		m.ResetCustomerName()
+		return nil
+	case booking.FieldPhoneNumber:
+		m.ResetPhoneNumber()
+		return nil
+	case booking.FieldDob:
+		m.ResetDob()
+		return nil
+	case booking.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case booking.FieldLicenseID:
+		m.ResetLicenseID()
+		return nil
+	case booking.FieldAddress:
+		m.ResetAddress()
 		return nil
 	}
 	return fmt.Errorf("unknown Booking field %s", name)

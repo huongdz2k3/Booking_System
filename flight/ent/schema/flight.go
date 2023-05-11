@@ -1,10 +1,10 @@
 package schema
 
 import (
-	"entgo.io/contrib/entproto"
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
-	"time"
 )
 
 // Flight holds the schema definition for the Flight entity.
@@ -15,17 +15,18 @@ type Flight struct {
 // Fields of the Flight.
 func (Flight) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").Annotations(entproto.Field(2)),
-		field.String("from").Annotations(entproto.Field(3)),
-		field.String("to").Annotations(entproto.Field(4)),
-		field.Time("depart_date").Annotations(entproto.Field(5)),
-		field.Time("depart_time").Annotations(entproto.Field(6)),
-		field.Time("return_date").Annotations(entproto.Field(12)).Nillable(),
-		field.String("status").Annotations(entproto.Field(7)),
-		field.Int("available_slots").NonNegative().Annotations(entproto.Field(8)),
-		field.String("flight_plane").Annotations(entproto.Field(9)),
-		field.Time("created_at").Default(time.Now()).Annotations(entproto.Field(10)),
-		field.Time("updated_at").Default(time.Now()).Annotations(entproto.Field(11)),
+		field.String("name"),
+		field.String("from"),
+		field.String("to"),
+		field.Time("depart_date"),
+		field.Time("depart_time"),
+		field.Enum("status").Values("ON_TIME", "DELAYED", "CANCELLED", "SCHEDULED").Default("SCHEDULED"),
+		field.Int("available_slots").NonNegative(),
+		field.Time("return_date").Nillable().Optional(),
+		field.Enum("type").Values("ONE_WAY", "RETURN_TICKET"),
+		field.String("flight_plane"),
+		field.Time("created_at").Default(time.Now()),
+		field.Time("updated_at").Default(time.Now()),
 	}
 }
 

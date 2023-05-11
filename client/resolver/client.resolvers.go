@@ -9,13 +9,29 @@ import (
 	"customer/ent"
 	"customer/ent/customer"
 	graphql1 "customer/graphql"
+	booking1 "customer/grpc/booking"
+	customer2 "customer/grpc/customer"
+	"customer/grpc/flight"
+	"customer/grpc/shared"
 	"customer/internal/utils"
-	customer2 "customer/proto/customer"
-	"customer/proto/flight"
 	"customer/service"
 	"fmt"
 	"strconv"
 )
+
+// Name is the resolver for the name field.
+func (r *bookingResolver) Name(ctx context.Context, obj *ent.Booking) (string, error) {
+	panic(fmt.Errorf("not implemented: Name - name"))
+}
+
+// Flight is the resolver for the flight field.
+func (r *bookingResolver) Flight(ctx context.Context, obj *ent.Booking) (*ent.Flight, error) {
+	fli, err := shared.GetFlightById(obj.FlightID)
+	if err != nil {
+		return nil, err
+	}
+	return flight.FromProtoFlight(fli)
+}
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input ent.RegisterInput) (*ent.Jwt, error) {
@@ -61,6 +77,10 @@ func (r *mutationResolver) Update(ctx context.Context, id string, input ent.Upda
 // ChangePassword is the resolver for the ChangePassword field.
 func (r *mutationResolver) ChangePassword(ctx context.Context, id string, input ent.ChangePasswordInput) (string, error) {
 	idInt, err := strconv.Atoi(id)
+	payload := ctx.Value("auth").(*service.JwtCustomClaim)
+	if payload.ID != idInt {
+		return "", utils.WrapGQLUnauthorizedError(ctx)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -70,6 +90,10 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, id string, input 
 // UpdateRole is the resolver for the UpdateRole field.
 func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input customer.Role) (*ent.Customer, error) {
 	idInt, err := strconv.Atoi(id)
+	payload := ctx.Value("auth").(*service.JwtCustomClaim)
+	if payload.ID != idInt {
+		return nil, utils.WrapGQLUnauthorizedError(ctx)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +103,7 @@ func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input cust
 
 // CreateFlight is the resolver for the CreateFlight field.
 func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFlightInput) (*ent.Flight, error) {
-	fli, err := flight.CreateFlight(&input)
+	fli, err := flight.CreateFlight(&input, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -92,11 +116,29 @@ func (r *mutationResolver) UpdateFlight(ctx context.Context, id string, input en
 	if err != nil {
 		return nil, err
 	}
-	fli, err := flight.UpdateFlight(&input, *numId)
+	fli, err := flight.UpdateFlight(&input, *numId, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return flight.FromProtoFlight(fli)
+}
+
+// CreateBooking is the resolver for the CreateBooking field.
+func (r *mutationResolver) CreateBooking(ctx context.Context, input ent.CreateBookingInput) (*ent.Booking, error) {
+	book, err := booking1.CreateBooking(&input, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return booking1.FromProtoToBooking(book), nil
+}
+
+// CancelBooking is the resolver for the CancelBooking field.
+func (r *mutationResolver) CancelBooking(ctx context.Context, input ent.CancelBookingInput) (*ent.Booking, error) {
+	book, err := booking1.CancelBooking(&input)
+	if err != nil {
+		return nil, err
+	}
+	return booking1.FromProtoToBooking(book), nil
 }
 
 // Customers is the resolver for the customers field.
@@ -114,11 +156,34 @@ func (r *queryResolver) SearchFlight(ctx context.Context, input ent.SearchFlight
 	return flight.ConvertListProtoToFlights(results)
 }
 
+// ViewBooking is the resolver for the ViewBooking field.
+func (r *queryResolver) ViewBooking(ctx context.Context, input ent.ViewBookingInput) (*ent.Booking, error) {
+	booking, err := booking1.ViewBooking(&input)
+	if err != nil {
+		return nil, err
+	}
+	return booking1.FromProtoToBooking(booking), nil
+}
+
+// GetBookingsHistory is the resolver for the GetBookingsHistory field.
+func (r *queryResolver) GetBookingsHistory(ctx context.Context, input *ent.PaginateInput) (*ent.BookingHistoryResponse, error) {
+	payload := ctx.Value("auth").(*service.JwtCustomClaim)
+	bookings, err := booking1.GetBookingsHistory(input, payload.ID)
+	if err != nil {
+		return nil, err
+	}
+	return booking1.ConvertListProtoToBookingHistory(bookings)
+}
+
+// Booking returns graphql1.BookingResolver implementation.
+func (r *Resolver) Booking() graphql1.BookingResolver { return &bookingResolver{r} }
+
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
 // Query returns graphql1.QueryResolver implementation.
 func (r *Resolver) Query() graphql1.QueryResolver { return &queryResolver{r} }
 
+type bookingResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"customer/ent/booking"
 	"customer/ent/customer"
 	"customer/ent/flight"
 	"errors"
@@ -94,6 +95,252 @@ func paginateLimit(first, last *int) int {
 		limit = *last + 1
 	}
 	return limit
+}
+
+// BookingEdge is the edge representation of Booking.
+type BookingEdge struct {
+	Node   *Booking `json:"node"`
+	Cursor Cursor   `json:"cursor"`
+}
+
+// BookingConnection is the connection containing edges to Booking.
+type BookingConnection struct {
+	Edges      []*BookingEdge `json:"edges"`
+	PageInfo   PageInfo       `json:"pageInfo"`
+	TotalCount int            `json:"totalCount"`
+}
+
+func (c *BookingConnection) build(nodes []*Booking, pager *bookingPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Booking
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Booking {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Booking {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*BookingEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &BookingEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// BookingPaginateOption enables pagination customization.
+type BookingPaginateOption func(*bookingPager) error
+
+// WithBookingOrder configures pagination ordering.
+func WithBookingOrder(order *BookingOrder) BookingPaginateOption {
+	if order == nil {
+		order = DefaultBookingOrder
+	}
+	o := *order
+	return func(pager *bookingPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultBookingOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithBookingFilter configures pagination filter.
+func WithBookingFilter(filter func(*BookingQuery) (*BookingQuery, error)) BookingPaginateOption {
+	return func(pager *bookingPager) error {
+		if filter == nil {
+			return errors.New("BookingQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type bookingPager struct {
+	reverse bool
+	order   *BookingOrder
+	filter  func(*BookingQuery) (*BookingQuery, error)
+}
+
+func newBookingPager(opts []BookingPaginateOption, reverse bool) (*bookingPager, error) {
+	pager := &bookingPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultBookingOrder
+	}
+	return pager, nil
+}
+
+func (p *bookingPager) applyFilter(query *BookingQuery) (*BookingQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *bookingPager) toCursor(b *Booking) Cursor {
+	return p.order.Field.toCursor(b)
+}
+
+func (p *bookingPager) applyCursors(query *BookingQuery, after, before *Cursor) (*BookingQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultBookingOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *bookingPager) applyOrder(query *BookingQuery) *BookingQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultBookingOrder.Field {
+		query = query.Order(DefaultBookingOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *bookingPager) orderExpr(query *BookingQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultBookingOrder.Field {
+			b.Comma().Ident(DefaultBookingOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Booking.
+func (b *BookingQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...BookingPaginateOption,
+) (*BookingConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newBookingPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if b, err = pager.applyFilter(b); err != nil {
+		return nil, err
+	}
+	conn := &BookingConnection{Edges: []*BookingEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = b.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if b, err = pager.applyCursors(b, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		b.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := b.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	b = pager.applyOrder(b)
+	nodes, err := b.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// BookingOrderField defines the ordering field of Booking.
+type BookingOrderField struct {
+	// Value extracts the ordering value from the given Booking.
+	Value    func(*Booking) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) booking.OrderOption
+	toCursor func(*Booking) Cursor
+}
+
+// BookingOrder defines the ordering of Booking.
+type BookingOrder struct {
+	Direction OrderDirection     `json:"direction"`
+	Field     *BookingOrderField `json:"field"`
+}
+
+// DefaultBookingOrder is the default ordering of Booking.
+var DefaultBookingOrder = &BookingOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.ID, nil
+		},
+		column: booking.FieldID,
+		toTerm: booking.ByID,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{ID: b.ID}
+		},
+	},
+}
+
+// ToEdge converts Booking into BookingEdge.
+func (b *Booking) ToEdge(order *BookingOrder) *BookingEdge {
+	if order == nil {
+		order = DefaultBookingOrder
+	}
+	return &BookingEdge{
+		Node:   b,
+		Cursor: order.Field.toCursor(b),
+	}
 }
 
 // CustomerEdge is the edge representation of Customer.

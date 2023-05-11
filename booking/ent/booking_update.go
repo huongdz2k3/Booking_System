@@ -40,9 +40,31 @@ func (bu *BookingUpdate) SetBookingDate(t time.Time) *BookingUpdate {
 	return bu
 }
 
+// SetNillableBookingDate sets the "booking_date" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableBookingDate(t *time.Time) *BookingUpdate {
+	if t != nil {
+		bu.SetBookingDate(*t)
+	}
+	return bu
+}
+
 // SetCancelDate sets the "cancel_date" field.
 func (bu *BookingUpdate) SetCancelDate(t time.Time) *BookingUpdate {
 	bu.mutation.SetCancelDate(t)
+	return bu
+}
+
+// SetNillableCancelDate sets the "cancel_date" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableCancelDate(t *time.Time) *BookingUpdate {
+	if t != nil {
+		bu.SetCancelDate(*t)
+	}
+	return bu
+}
+
+// ClearCancelDate clears the value of the "cancel_date" field.
+func (bu *BookingUpdate) ClearCancelDate() *BookingUpdate {
+	bu.mutation.ClearCancelDate()
 	return bu
 }
 
@@ -94,9 +116,23 @@ func (bu *BookingUpdate) SetCustomerID(i int) *BookingUpdate {
 	return bu
 }
 
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableCustomerID(i *int) *BookingUpdate {
+	if i != nil {
+		bu.SetCustomerID(*i)
+	}
+	return bu
+}
+
 // AddCustomerID adds i to the "customer_id" field.
 func (bu *BookingUpdate) AddCustomerID(i int) *BookingUpdate {
 	bu.mutation.AddCustomerID(i)
+	return bu
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (bu *BookingUpdate) ClearCustomerID() *BookingUpdate {
+	bu.mutation.ClearCustomerID()
 	return bu
 }
 
@@ -111,6 +147,42 @@ func (bu *BookingUpdate) SetNillableStatus(b *booking.Status) *BookingUpdate {
 	if b != nil {
 		bu.SetStatus(*b)
 	}
+	return bu
+}
+
+// SetCustomerName sets the "customer_name" field.
+func (bu *BookingUpdate) SetCustomerName(s string) *BookingUpdate {
+	bu.mutation.SetCustomerName(s)
+	return bu
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (bu *BookingUpdate) SetPhoneNumber(s string) *BookingUpdate {
+	bu.mutation.SetPhoneNumber(s)
+	return bu
+}
+
+// SetDob sets the "dob" field.
+func (bu *BookingUpdate) SetDob(s string) *BookingUpdate {
+	bu.mutation.SetDob(s)
+	return bu
+}
+
+// SetEmail sets the "email" field.
+func (bu *BookingUpdate) SetEmail(s string) *BookingUpdate {
+	bu.mutation.SetEmail(s)
+	return bu
+}
+
+// SetLicenseID sets the "license_id" field.
+func (bu *BookingUpdate) SetLicenseID(s string) *BookingUpdate {
+	bu.mutation.SetLicenseID(s)
+	return bu
+}
+
+// SetAddress sets the "address" field.
+func (bu *BookingUpdate) SetAddress(s string) *BookingUpdate {
+	bu.mutation.SetAddress(s)
 	return bu
 }
 
@@ -168,6 +240,11 @@ func (bu *BookingUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
 		}
 	}
+	if v, ok := bu.mutation.LicenseID(); ok {
+		if err := booking.LicenseIDValidator(v); err != nil {
+			return &ValidationError{Name: "license_id", err: fmt.Errorf(`ent: validator failed for field "Booking.license_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -192,6 +269,9 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.CancelDate(); ok {
 		_spec.SetField(booking.FieldCancelDate, field.TypeTime, value)
 	}
+	if bu.mutation.CancelDateCleared() {
+		_spec.ClearField(booking.FieldCancelDate, field.TypeTime)
+	}
 	if value, ok := bu.mutation.CreatedAt(); ok {
 		_spec.SetField(booking.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -210,8 +290,29 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.AddedCustomerID(); ok {
 		_spec.AddField(booking.FieldCustomerID, field.TypeInt, value)
 	}
+	if bu.mutation.CustomerIDCleared() {
+		_spec.ClearField(booking.FieldCustomerID, field.TypeInt)
+	}
 	if value, ok := bu.mutation.Status(); ok {
 		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := bu.mutation.CustomerName(); ok {
+		_spec.SetField(booking.FieldCustomerName, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.PhoneNumber(); ok {
+		_spec.SetField(booking.FieldPhoneNumber, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.Dob(); ok {
+		_spec.SetField(booking.FieldDob, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.Email(); ok {
+		_spec.SetField(booking.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.LicenseID(); ok {
+		_spec.SetField(booking.FieldLicenseID, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.Address(); ok {
+		_spec.SetField(booking.FieldAddress, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -245,9 +346,31 @@ func (buo *BookingUpdateOne) SetBookingDate(t time.Time) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableBookingDate sets the "booking_date" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableBookingDate(t *time.Time) *BookingUpdateOne {
+	if t != nil {
+		buo.SetBookingDate(*t)
+	}
+	return buo
+}
+
 // SetCancelDate sets the "cancel_date" field.
 func (buo *BookingUpdateOne) SetCancelDate(t time.Time) *BookingUpdateOne {
 	buo.mutation.SetCancelDate(t)
+	return buo
+}
+
+// SetNillableCancelDate sets the "cancel_date" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableCancelDate(t *time.Time) *BookingUpdateOne {
+	if t != nil {
+		buo.SetCancelDate(*t)
+	}
+	return buo
+}
+
+// ClearCancelDate clears the value of the "cancel_date" field.
+func (buo *BookingUpdateOne) ClearCancelDate() *BookingUpdateOne {
+	buo.mutation.ClearCancelDate()
 	return buo
 }
 
@@ -299,9 +422,23 @@ func (buo *BookingUpdateOne) SetCustomerID(i int) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableCustomerID(i *int) *BookingUpdateOne {
+	if i != nil {
+		buo.SetCustomerID(*i)
+	}
+	return buo
+}
+
 // AddCustomerID adds i to the "customer_id" field.
 func (buo *BookingUpdateOne) AddCustomerID(i int) *BookingUpdateOne {
 	buo.mutation.AddCustomerID(i)
+	return buo
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (buo *BookingUpdateOne) ClearCustomerID() *BookingUpdateOne {
+	buo.mutation.ClearCustomerID()
 	return buo
 }
 
@@ -316,6 +453,42 @@ func (buo *BookingUpdateOne) SetNillableStatus(b *booking.Status) *BookingUpdate
 	if b != nil {
 		buo.SetStatus(*b)
 	}
+	return buo
+}
+
+// SetCustomerName sets the "customer_name" field.
+func (buo *BookingUpdateOne) SetCustomerName(s string) *BookingUpdateOne {
+	buo.mutation.SetCustomerName(s)
+	return buo
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (buo *BookingUpdateOne) SetPhoneNumber(s string) *BookingUpdateOne {
+	buo.mutation.SetPhoneNumber(s)
+	return buo
+}
+
+// SetDob sets the "dob" field.
+func (buo *BookingUpdateOne) SetDob(s string) *BookingUpdateOne {
+	buo.mutation.SetDob(s)
+	return buo
+}
+
+// SetEmail sets the "email" field.
+func (buo *BookingUpdateOne) SetEmail(s string) *BookingUpdateOne {
+	buo.mutation.SetEmail(s)
+	return buo
+}
+
+// SetLicenseID sets the "license_id" field.
+func (buo *BookingUpdateOne) SetLicenseID(s string) *BookingUpdateOne {
+	buo.mutation.SetLicenseID(s)
+	return buo
+}
+
+// SetAddress sets the "address" field.
+func (buo *BookingUpdateOne) SetAddress(s string) *BookingUpdateOne {
+	buo.mutation.SetAddress(s)
 	return buo
 }
 
@@ -386,6 +559,11 @@ func (buo *BookingUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
 		}
 	}
+	if v, ok := buo.mutation.LicenseID(); ok {
+		if err := booking.LicenseIDValidator(v); err != nil {
+			return &ValidationError{Name: "license_id", err: fmt.Errorf(`ent: validator failed for field "Booking.license_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -427,6 +605,9 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	if value, ok := buo.mutation.CancelDate(); ok {
 		_spec.SetField(booking.FieldCancelDate, field.TypeTime, value)
 	}
+	if buo.mutation.CancelDateCleared() {
+		_spec.ClearField(booking.FieldCancelDate, field.TypeTime)
+	}
 	if value, ok := buo.mutation.CreatedAt(); ok {
 		_spec.SetField(booking.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -445,8 +626,29 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	if value, ok := buo.mutation.AddedCustomerID(); ok {
 		_spec.AddField(booking.FieldCustomerID, field.TypeInt, value)
 	}
+	if buo.mutation.CustomerIDCleared() {
+		_spec.ClearField(booking.FieldCustomerID, field.TypeInt)
+	}
 	if value, ok := buo.mutation.Status(); ok {
 		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := buo.mutation.CustomerName(); ok {
+		_spec.SetField(booking.FieldCustomerName, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.PhoneNumber(); ok {
+		_spec.SetField(booking.FieldPhoneNumber, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.Dob(); ok {
+		_spec.SetField(booking.FieldDob, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.Email(); ok {
+		_spec.SetField(booking.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.LicenseID(); ok {
+		_spec.SetField(booking.FieldLicenseID, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.Address(); ok {
+		_spec.SetField(booking.FieldAddress, field.TypeString, value)
 	}
 	_node = &Booking{config: buo.config}
 	_spec.Assign = _node.assignValues

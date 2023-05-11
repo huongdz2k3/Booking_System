@@ -50,21 +50,43 @@ func (fc *FlightCreate) SetDepartTime(t time.Time) *FlightCreate {
 	return fc
 }
 
-// SetReturnDate sets the "return_date" field.
-func (fc *FlightCreate) SetReturnDate(t time.Time) *FlightCreate {
-	fc.mutation.SetReturnDate(t)
+// SetStatus sets the "status" field.
+func (fc *FlightCreate) SetStatus(f flight.Status) *FlightCreate {
+	fc.mutation.SetStatus(f)
 	return fc
 }
 
-// SetStatus sets the "status" field.
-func (fc *FlightCreate) SetStatus(s string) *FlightCreate {
-	fc.mutation.SetStatus(s)
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (fc *FlightCreate) SetNillableStatus(f *flight.Status) *FlightCreate {
+	if f != nil {
+		fc.SetStatus(*f)
+	}
 	return fc
 }
 
 // SetAvailableSlots sets the "available_slots" field.
 func (fc *FlightCreate) SetAvailableSlots(i int) *FlightCreate {
 	fc.mutation.SetAvailableSlots(i)
+	return fc
+}
+
+// SetReturnDate sets the "return_date" field.
+func (fc *FlightCreate) SetReturnDate(t time.Time) *FlightCreate {
+	fc.mutation.SetReturnDate(t)
+	return fc
+}
+
+// SetNillableReturnDate sets the "return_date" field if the given value is not nil.
+func (fc *FlightCreate) SetNillableReturnDate(t *time.Time) *FlightCreate {
+	if t != nil {
+		fc.SetReturnDate(*t)
+	}
+	return fc
+}
+
+// SetType sets the "type" field.
+func (fc *FlightCreate) SetType(f flight.Type) *FlightCreate {
+	fc.mutation.SetType(f)
 	return fc
 }
 
@@ -137,6 +159,10 @@ func (fc *FlightCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (fc *FlightCreate) defaults() {
+	if _, ok := fc.mutation.Status(); !ok {
+		v := flight.DefaultStatus
+		fc.mutation.SetStatus(v)
+	}
 	if _, ok := fc.mutation.CreatedAt(); !ok {
 		v := flight.DefaultCreatedAt
 		fc.mutation.SetCreatedAt(v)
@@ -164,11 +190,13 @@ func (fc *FlightCreate) check() error {
 	if _, ok := fc.mutation.DepartTime(); !ok {
 		return &ValidationError{Name: "depart_time", err: errors.New(`ent: missing required field "Flight.depart_time"`)}
 	}
-	if _, ok := fc.mutation.ReturnDate(); !ok {
-		return &ValidationError{Name: "return_date", err: errors.New(`ent: missing required field "Flight.return_date"`)}
-	}
 	if _, ok := fc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Flight.status"`)}
+	}
+	if v, ok := fc.mutation.Status(); ok {
+		if err := flight.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Flight.status": %w`, err)}
+		}
 	}
 	if _, ok := fc.mutation.AvailableSlots(); !ok {
 		return &ValidationError{Name: "available_slots", err: errors.New(`ent: missing required field "Flight.available_slots"`)}
@@ -176,6 +204,14 @@ func (fc *FlightCreate) check() error {
 	if v, ok := fc.mutation.AvailableSlots(); ok {
 		if err := flight.AvailableSlotsValidator(v); err != nil {
 			return &ValidationError{Name: "available_slots", err: fmt.Errorf(`ent: validator failed for field "Flight.available_slots": %w`, err)}
+		}
+	}
+	if _, ok := fc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Flight.type"`)}
+	}
+	if v, ok := fc.mutation.GetType(); ok {
+		if err := flight.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Flight.type": %w`, err)}
 		}
 	}
 	if _, ok := fc.mutation.FlightPlane(); !ok {
@@ -233,17 +269,21 @@ func (fc *FlightCreate) createSpec() (*Flight, *sqlgraph.CreateSpec) {
 		_spec.SetField(flight.FieldDepartTime, field.TypeTime, value)
 		_node.DepartTime = value
 	}
-	if value, ok := fc.mutation.ReturnDate(); ok {
-		_spec.SetField(flight.FieldReturnDate, field.TypeTime, value)
-		_node.ReturnDate = &value
-	}
 	if value, ok := fc.mutation.Status(); ok {
-		_spec.SetField(flight.FieldStatus, field.TypeString, value)
+		_spec.SetField(flight.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
 	if value, ok := fc.mutation.AvailableSlots(); ok {
 		_spec.SetField(flight.FieldAvailableSlots, field.TypeInt, value)
 		_node.AvailableSlots = value
+	}
+	if value, ok := fc.mutation.ReturnDate(); ok {
+		_spec.SetField(flight.FieldReturnDate, field.TypeTime, value)
+		_node.ReturnDate = &value
+	}
+	if value, ok := fc.mutation.GetType(); ok {
+		_spec.SetField(flight.FieldType, field.TypeEnum, value)
+		_node.Type = value
 	}
 	if value, ok := fc.mutation.FlightPlane(); ok {
 		_spec.SetField(flight.FieldFlightPlane, field.TypeString, value)

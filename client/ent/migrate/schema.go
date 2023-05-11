@@ -8,6 +8,30 @@ import (
 )
 
 var (
+	// BookingsColumns holds the columns for the "bookings" table.
+	BookingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "booking_code", Type: field.TypeString},
+		{Name: "booking_date", Type: field.TypeString},
+		{Name: "cancel_date", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "flight_id", Type: field.TypeInt},
+		{Name: "customer_id", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"CANCEL", "SUCCESS", "PROCESS"}, Default: "PROCESS"},
+		{Name: "customer_name", Type: field.TypeString},
+		{Name: "phone_number", Type: field.TypeString},
+		{Name: "dob", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "license_id", Type: field.TypeString, Size: 10},
+		{Name: "address", Type: field.TypeString},
+	}
+	// BookingsTable holds the schema information for the "bookings" table.
+	BookingsTable = &schema.Table{
+		Name:       "bookings",
+		Columns:    BookingsColumns,
+		PrimaryKey: []*schema.Column{BookingsColumns[0]},
+	}
 	// CustomersColumns holds the columns for the "customers" table.
 	CustomersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -35,11 +59,12 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "from", Type: field.TypeString},
 		{Name: "to", Type: field.TypeString},
-		{Name: "depart_date", Type: field.TypeTime},
-		{Name: "depart_time", Type: field.TypeTime},
+		{Name: "depart_date", Type: field.TypeString},
+		{Name: "depart_time", Type: field.TypeString},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"ON_TIME", "DELAYED", "CANCELLED", "SCHEDULED"}, Default: "SCHEDULED"},
 		{Name: "available_slots", Type: field.TypeInt},
-		{Name: "return_date", Type: field.TypeTime},
+		{Name: "return_date", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"ONE_WAY", "RETURN_TICKET"}},
 		{Name: "flight_plane", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -52,6 +77,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		BookingsTable,
 		CustomersTable,
 		FlightsTable,
 	}

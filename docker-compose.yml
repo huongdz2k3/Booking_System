@@ -1,18 +1,64 @@
 version: '3'
 
 services:
-  db:
-    image: postgres
+  database:
+    image: postgres:13-alpine
     restart: always
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: huongbui
       POSTGRES_PASSWORD: huongbui
       POSTGRES_DB: booking_system
-    volumes:
-      - dbdata:/var/lib/postgresql/data
+      SSLMODE: disable
+      POSTGRES_HOST: localhost
+    ports:
+      - "5432:5432"
 
-volumes:
-  dbdata:
+  booking:
+    image: booking-image
+    restart: always
+    depends_on:
+      - database
+    environment:
+      POSTGRES_CONNECTION_STRING: postgresql://huongbui:huongbui@database:5432/booking_system?sslmode=disable
+      PORT: 5003
+
+
+  flight:
+    image: flight-image
+    restart: always
+    depends_on:
+      - database
+    environment:
+      POSTGRES_CONNECTION_STRING: postgresql://huongbui:huongbui@database:5432/booking_system?sslmode=disable
+      PORT: 5002
+    ports:
+      - "5002:5002"
+  customer:
+    image: customer-image
+    restart: always
+    depends_on:
+      - database
+    environment:
+      POSTGRES_CONNECTION_STRING: postgresql://huongbui:huongbui@database:5432/booking_system?sslmode=disable
+      PORT: 5000
+
+  client:
+    image: client-image
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - booking
+      - flight
+      - customer
+    environment:
+      PORT: 8080
+      CUSTOMER_SERVICE_PORT: 5000
+      CUSTOMER_SERVICE_HOST: customer
+      FLIGHT_SERVICE_PORT: 5002
+      FLIGHT_SERVICE_HOST: flight
+      BOOKING_SERVICE_PORT: 5003
+      BOOKING_SERVICE_HOST: booking
+      JWT_SECRET: huongbui
+      JWT_EXPIRE: 3600s
 

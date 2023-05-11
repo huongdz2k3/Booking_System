@@ -3,6 +3,7 @@
 package flight
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -23,12 +24,14 @@ const (
 	FieldDepartDate = "depart_date"
 	// FieldDepartTime holds the string denoting the depart_time field in the database.
 	FieldDepartTime = "depart_time"
-	// FieldReturnDate holds the string denoting the return_date field in the database.
-	FieldReturnDate = "return_date"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldAvailableSlots holds the string denoting the available_slots field in the database.
 	FieldAvailableSlots = "available_slots"
+	// FieldReturnDate holds the string denoting the return_date field in the database.
+	FieldReturnDate = "return_date"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldFlightPlane holds the string denoting the flight_plane field in the database.
 	FieldFlightPlane = "flight_plane"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -47,9 +50,10 @@ var Columns = []string{
 	FieldTo,
 	FieldDepartDate,
 	FieldDepartTime,
-	FieldReturnDate,
 	FieldStatus,
 	FieldAvailableSlots,
+	FieldReturnDate,
+	FieldType,
 	FieldFlightPlane,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -73,6 +77,57 @@ var (
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt time.Time
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusSCHEDULED is the default value of the Status enum.
+const DefaultStatus = StatusSCHEDULED
+
+// Status values.
+const (
+	StatusON_TIME   Status = "ON_TIME"
+	StatusDELAYED   Status = "DELAYED"
+	StatusCANCELLED Status = "CANCELLED"
+	StatusSCHEDULED Status = "SCHEDULED"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusON_TIME, StatusDELAYED, StatusCANCELLED, StatusSCHEDULED:
+		return nil
+	default:
+		return fmt.Errorf("flight: invalid enum value for status field: %q", s)
+	}
+}
+
+// Type defines the type for the "type" enum field.
+type Type string
+
+// Type values.
+const (
+	TypeONE_WAY       Type = "ONE_WAY"
+	TypeRETURN_TICKET Type = "RETURN_TICKET"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeONE_WAY, TypeRETURN_TICKET:
+		return nil
+	default:
+		return fmt.Errorf("flight: invalid enum value for type field: %q", _type)
+	}
+}
 
 // OrderOption defines the ordering options for the Flight queries.
 type OrderOption func(*sql.Selector)
@@ -107,11 +162,6 @@ func ByDepartTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDepartTime, opts...).ToFunc()
 }
 
-// ByReturnDate orders the results by the return_date field.
-func ByReturnDate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldReturnDate, opts...).ToFunc()
-}
-
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
@@ -120,6 +170,16 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByAvailableSlots orders the results by the available_slots field.
 func ByAvailableSlots(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvailableSlots, opts...).ToFunc()
+}
+
+// ByReturnDate orders the results by the return_date field.
+func ByReturnDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReturnDate, opts...).ToFunc()
+}
+
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
 // ByFlightPlane orders the results by the flight_plane field.

@@ -32,6 +32,8 @@ const (
 	FieldAvailableSlots = "available_slots"
 	// FieldReturnDate holds the string denoting the return_date field in the database.
 	FieldReturnDate = "return_date"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldFlightPlane holds the string denoting the flight_plane field in the database.
 	FieldFlightPlane = "flight_plane"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -53,6 +55,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldAvailableSlots,
 	FieldReturnDate,
+	FieldType,
 	FieldFlightPlane,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -105,6 +108,29 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// Type defines the type for the "type" enum field.
+type Type string
+
+// Type values.
+const (
+	TypeONE_WAY       Type = "ONE_WAY"
+	TypeRETURN_TICKET Type = "RETURN_TICKET"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeONE_WAY, TypeRETURN_TICKET:
+		return nil
+	default:
+		return fmt.Errorf("flight: invalid enum value for type field: %q", _type)
+	}
+}
+
 // OrderOption defines the ordering options for the Flight queries.
 type OrderOption func(*sql.Selector)
 
@@ -153,6 +179,11 @@ func ByReturnDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReturnDate, opts...).ToFunc()
 }
 
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
+}
+
 // ByFlightPlane orders the results by the flight_plane field.
 func ByFlightPlane(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFlightPlane, opts...).ToFunc()
@@ -182,6 +213,24 @@ func (e *Status) UnmarshalGQL(val interface{}) error {
 	*e = Status(str)
 	if err := StatusValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Type) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Type) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Type(str)
+	if err := TypeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Type", str)
 	}
 	return nil
 }

@@ -1,30 +1,38 @@
 package main
 
 import (
-	"booking/ent"
+	"booking/cmd/api"
 	"booking/internal/logger"
-	"booking/internal/utils"
-	"context"
+	"fmt"
+	_ "github.com/lib/pq"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"os"
 )
+
+// run server with CLI
+var rootCmd = &cobra.Command{
+	Use:   "server",
+	Short: "server CLI",
+	Long:  "run server with CLI",
+}
+
+// init initializes the env and logger.
+func init() {
+	logger := initLogger()
+
+	apiCmd := api.NewServerCmd(logger)
+	rootCmd.AddCommand(apiCmd)
+}
 
 // initLogger creates a new zap. Logger
 func initLogger() *zap.Logger {
 	return logger.NewLogger()
 }
+
 func main() {
-	initLogger()
-	utils.LoadEnv()
-	get := utils.GetEnvWithKey
-	client, err := ent.Open("postgres", get("POSTGRES_CONNECTION_STRING"))
-
-	if err != nil {
-		logger.NewLogger().Fatal("failed opening connection to postgres", zap.Error(err))
-
-	}
-
-	// Run the migration tool (creating tables, etc).
-	if err := client.Schema.Create(context.Background()); err != nil {
-		logger.NewLogger().Fatal("failed creating schema resources", zap.Error(err))
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Printf("run command has failed with error: %v\n", err)
+		os.Exit(1)
 	}
 }
