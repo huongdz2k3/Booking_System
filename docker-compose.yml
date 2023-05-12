@@ -14,7 +14,9 @@ services:
       - "5432:5432"
 
   booking:
-    image: booking-image
+    build:
+      context: ./booking
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - database
@@ -24,7 +26,9 @@ services:
 
 
   flight:
-    image: flight-image
+    build:
+      context: ./flight
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - database
@@ -33,7 +37,9 @@ services:
       PORT: 5002
 
   customer:
-    image: customer-image
+    build:
+      context: ./customer
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - database
@@ -42,7 +48,9 @@ services:
       PORT: 5000
 
   client:
-    image: client-image
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "8080:8080"
