@@ -83,7 +83,7 @@ func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlight
 		flightTypeQuery = flight.TypeRETURN_TICKET
 	}
 	// Query flights with the specified conditions
-	flightsList, _ := s.client.Flight.Query().
+	flightsList, err := s.client.Flight.Query().
 		Where(
 			flight.Or(
 				flight.And(
@@ -103,8 +103,11 @@ func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlight
 			),
 		).Offset(int(offset)).Limit(int(input.Size)).All(ctx)
 
+	if err != nil {
+		return nil, err
+	}
 	// Count the total number of records matching the criteria.
-	totalCount, _ := s.client.Flight.Query().
+	totalCount, err := s.client.Flight.Query().
 		Where(
 			flight.Or(
 				flight.And(
@@ -123,7 +126,9 @@ func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlight
 				),
 			),
 		).Count(ctx)
-
+	if err != nil {
+		return nil, err
+	}
 	// Calculate the total number of pages based on the total count and page size.
 	totalPages := int(math.Ceil(float64(totalCount) / float64(input.Size)))
 

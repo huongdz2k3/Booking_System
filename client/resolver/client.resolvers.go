@@ -71,6 +71,9 @@ func (r *mutationResolver) Update(ctx context.Context, id string, input ent.Upda
 		return nil, err
 	}
 	cus, err := customer2.Update(&input, idInt)
+	if err != nil {
+		return nil, err
+	}
 	return customer2.FromProtoCustomer(cus)
 }
 
@@ -90,14 +93,14 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, id string, input 
 // UpdateRole is the resolver for the UpdateRole field.
 func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input customer.Role) (*ent.Customer, error) {
 	idInt, err := strconv.Atoi(id)
-	payload := ctx.Value("auth").(*service.JwtCustomClaim)
-	if payload.ID != idInt {
-		return nil, utils.WrapGQLUnauthorizedError(ctx)
-	}
+
 	if err != nil {
 		return nil, err
 	}
 	cus, err := customer2.UpdateRole(input, idInt)
+	if err != nil {
+		return nil, err
+	}
 	return customer2.FromProtoCustomer(cus)
 }
 

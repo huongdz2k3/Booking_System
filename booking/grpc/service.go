@@ -44,7 +44,7 @@ func BookingToProto(booking *ent.Booking) *pb.Booking {
 }
 
 func (s *BookingService) CreateBooking(ctx context.Context, input *pb.CreateBookingInput) (*pb.Booking, error) {
-	booking, err := s.client.Booking.Create().
+	book, err := s.client.Booking.Create().
 		SetAddress(input.Address).
 		SetEmail(input.Email).
 		SetPhoneNumber(input.PhoneNumber).
@@ -58,8 +58,8 @@ func (s *BookingService) CreateBooking(ctx context.Context, input *pb.CreateBook
 	if err != nil {
 		return nil, err
 	}
-
-	return BookingToProto(booking), nil
+	b, _ := book.Update().SetStatus(booking.StatusSUCCESS).Save(ctx)
+	return BookingToProto(b), nil
 }
 
 func (s *BookingService) ViewBooking(ctx context.Context, input *pb.ViewBookingInput) (*pb.Booking, error) {

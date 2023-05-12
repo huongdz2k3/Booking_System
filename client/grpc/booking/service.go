@@ -39,7 +39,9 @@ func GetBookingGRPCClient() *grpcClient {
 
 func CreateBooking(input *ent.CreateBookingInput, ctx context.Context) (*pb.Booking, error) {
 	flight, err := shared.GetFlightById(input.FlightID)
-	customer, _ := customer2.GetCustomerByEmail(&pb.GetCustomerByEmailInput{Email: input.Email})
+	if err != nil {
+		return nil, utils.WrapGQLBadRequestError(ctx, "Flight not found")
+	}
 
 	successBookingCount, err := shared.CountBookingsByStatus(&pb.CountBookingsByStatusInput{Status: "SUCCESS"})
 	if err != nil {
@@ -48,9 +50,7 @@ func CreateBooking(input *ent.CreateBookingInput, ctx context.Context) (*pb.Book
 	if flight.AvailableSlots-successBookingCount.TotalRecords <= 0 {
 		return nil, utils.WrapGQLBadRequestError(ctx, "No available slot")
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	if flight.Status != "SCHEDULED" {
 		return nil, utils.WrapGQLBadRequestError(ctx, "Flight is not available")
 	}
@@ -65,14 +65,16 @@ func CreateBooking(input *ent.CreateBookingInput, ctx context.Context) (*pb.Book
 		return nil, utils.WrapGQLBadRequestError(ctx, "No available slot")
 	}
 	createBookingInput, err := ConvertCreateBookingInput(input, ctx)
+
+	// find cus in database
+	customer, _ := customer2.GetCustomerByEmail(&pb.GetCustomerByEmailInput{Email: input.Email})
 	if customer != nil {
 		createBookingInput.CustomerId = int32(customer.Id)
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	// connect gRPC server
 	resp, err := GetBookingGRPCClient().client.CreateBooking(context.Background(), createBookingInput)
+
 	if err != nil {
 		return nil, err
 	}

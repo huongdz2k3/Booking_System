@@ -31,8 +31,7 @@ services:
     environment:
       POSTGRES_CONNECTION_STRING: postgresql://huongbui:huongbui@database:5432/booking_system?sslmode=disable
       PORT: 5002
-    ports:
-      - "5002:5002"
+
   customer:
     image: customer-image
     restart: always
