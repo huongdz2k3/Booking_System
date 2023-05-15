@@ -13,4 +13,5 @@ COPY . .
 # cmd/main.go is to specify the file to be built
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server cmd/main.go
 # cmd below is to specify the executable file to be run when the container is started
-CMD ["go", "run", "./cmd" ,"api"]
+CMD ["./server", "api"]
+

@@ -23,7 +23,10 @@ func BookingToProto(booking *ent.Booking) *pb.Booking {
 	if booking.CancelDate != nil {
 		cancelDate = timestamppb.New(*booking.CancelDate)
 	}
-
+	var cusId int32
+	if *booking.CustomerID != 0 {
+		cusId = int32(*booking.CustomerID)
+	}
 	return &pb.Booking{
 		Id:           int32(booking.ID),
 		CreatedAt:    timestamppb.New(booking.CreatedAt),
@@ -35,7 +38,7 @@ func BookingToProto(booking *ent.Booking) *pb.Booking {
 		Dob:          *booking.Dob,
 		CustomerName: *booking.CustomerName,
 		FlightId:     int32(booking.FlightID),
-		CustomerId:   int32(*booking.CustomerID),
+		CustomerId:   cusId,
 		LicenseId:    *booking.LicenseID,
 		BookingDate:  timestamppb.New(booking.BookingDate),
 		CancelDate:   cancelDate,
@@ -52,9 +55,13 @@ func (s *BookingService) CreateBooking(ctx context.Context, input *pb.CreateBook
 		SetCustomerName(input.CustomerName).
 		SetLicenseID(input.LicenseId).
 		SetFlightID(int(input.FlightId)).
-		SetCustomerID(int(input.CustomerId)).
 		SetBookingCode(generateRandomString(6)).
 		Save(ctx)
+	if input.CustomerId != 0 {
+		id := int(input.CustomerId)
+		book.CustomerID = &id
+		book, _ = book.Update().Save(ctx)
+	}
 	if err != nil {
 		return nil, err
 	}

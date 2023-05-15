@@ -48,7 +48,7 @@ type Customer implements Node {
   email: String!
   licenseID: String!
   address: String!
-  membershipNumber: Int!
+  membershipNumber: Int
   role: CustomerRole!
 }
 

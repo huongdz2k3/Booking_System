@@ -43,7 +43,7 @@ func CreateBooking(input *ent.CreateBookingInput, ctx context.Context) (*pb.Book
 		return nil, utils.WrapGQLBadRequestError(ctx, "Flight not found")
 	}
 
-	successBookingCount, err := shared.CountBookingsByStatus(&pb.CountBookingsByStatusInput{Status: "SUCCESS"})
+	successBookingCount, err := shared.CountBookingsByStatus(&pb.CountBookingsByStatusInput{Status: "SUCCESS", FlightId: flight.Id})
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +60,7 @@ func CreateBooking(input *ent.CreateBookingInput, ctx context.Context) (*pb.Book
 		}
 	}
 
-	count, err := shared.CountBookingsByStatus(&pb.CountBookingsByStatusInput{Status: "SUCCESS"})
-	if flight.AvailableSlots <= count.TotalRecords {
+	if flight.AvailableSlots <= successBookingCount.TotalRecords {
 		return nil, utils.WrapGQLBadRequestError(ctx, "No available slot")
 	}
 	createBookingInput, err := ConvertCreateBookingInput(input, ctx)

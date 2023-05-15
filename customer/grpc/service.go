@@ -47,7 +47,12 @@ func (svc *CustomerService) Register(ctx context.Context, req *pb.RegisterInput)
 		return nil, utils.WrapBadRequestError(ctx, "License ID already exists")
 	}
 
-	u, err := svc.client.Customer.Create().SetName(req.GetName()).SetEmail(req.GetEmail()).SetPhoneNumber(req.GetPhoneNumber()).SetLicenseID(req.GetLicenseId()).SetAddress(req.GetAddress()).SetMembershipNumber(int(req.GetMembershipNumber())).SetPassword(req.GetPassword()).SetRole("SUBSCRIBER").Save(ctx)
+	u, err := svc.client.Customer.Create().SetName(req.GetName()).SetEmail(req.GetEmail()).SetPhoneNumber(req.GetPhoneNumber()).SetLicenseID(req.GetLicenseId()).SetAddress(req.GetAddress()).SetPassword(req.GetPassword()).SetRole("SUBSCRIBER").Save(ctx)
+	if req.MembershipNumber != nil {
+		num := int(req.GetMembershipNumber())
+		u.MembershipNumber = &num
+		u.Update().Save(ctx)
+	}
 	if err != nil {
 		return nil, utils.WrapBadRequestError(ctx, "Invalid input")
 	}
@@ -83,17 +88,7 @@ func (svc *CustomerService) Update(ctx context.Context, req *pb.UpdateCustomerIn
 	if validation.IsEmail(req.GetEmail()) == false {
 		return nil, utils.WrapBadRequestError(ctx, "Invalid Email")
 	}
-	checkExist, _ := svc.GetCustomerByEmail(ctx, &pb.GetCustomerByEmailInput{Email: req.GetEmail()})
 
-	if checkExist != nil {
-		return nil, utils.WrapBadRequestError(ctx, "Email already exists")
-	}
-
-	// check license id
-	checkLicenseExist, _ := svc.client.Customer.Query().Where(customer.LicenseID(req.GetLicenseId())).Only(ctx)
-	if checkLicenseExist != nil {
-		return nil, utils.WrapBadRequestError(ctx, "License ID already exists")
-	}
 	u, err := svc.client.Customer.UpdateOneID(int(req.GetId())).SetName(req.GetName()).SetEmail(req.GetEmail()).SetPhoneNumber(req.GetPhoneNumber()).SetAddress(req.GetAddress()).SetUpdateAt(time.Now()).Save(ctx)
 	if req.MembershipNumber != nil {
 		membershipNumber := int(req.GetMembershipNumber())
@@ -101,7 +96,7 @@ func (svc *CustomerService) Update(ctx context.Context, req *pb.UpdateCustomerIn
 		u.Update().Save(ctx)
 	}
 	if err != nil {
-		return nil, utils.WrapNotFoundError(ctx)
+		return nil, err
 	}
 
 	return ToProtoCustomer(u)

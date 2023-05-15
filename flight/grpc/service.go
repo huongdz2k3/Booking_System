@@ -76,7 +76,6 @@ func (s *FlightService) UpdateFlight(ctx context.Context, input *pb.UpdateFlight
 func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlightInput) (*pb.SearchFlightResponse, error) {
 	// Calculate the offset based on the page and size inputs.
 	offset := (input.Page - 1) * input.Size
-
 	// Determine the flight type query based on input.Type
 	flightTypeQuery := flight.TypeONE_WAY
 	if input.Type == "RETURN_TICKET" {
@@ -89,14 +88,14 @@ func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlight
 				flight.And(
 					flight.From(input.From),
 					flight.To(input.To),
-					flight.DepartDate(ConvertProtoTimestampToTime(input.DepartDate)),
+					flight.DepartDateGTE(ConvertProtoTimestampToTime(input.DepartDate)),
 					flight.StatusIn(flight.StatusSCHEDULED),
 					flight.TypeEQ(flightTypeQuery),
 				),
 				flight.And(
 					flight.From(input.To),
 					flight.To(input.From),
-					flight.DepartDate(ConvertProtoTimestampToTime(input.ReturnDate)),
+					flight.DepartDateLTE(ConvertProtoTimestampToTime(input.ReturnDate)),
 					flight.StatusIn(flight.StatusSCHEDULED),
 					flight.TypeEQ(flightTypeQuery),
 				),

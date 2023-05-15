@@ -12,7 +12,8 @@ services:
       POSTGRES_HOST: localhost
     ports:
       - "5432:5432"
-
+    volumes:
+      - ./database:/var/lib/postgresql/data
   booking:
     build:
       context: ./booking
