@@ -3,6 +3,7 @@ package flight
 import (
 	"context"
 	"customer/ent"
+	"customer/grpc/booking"
 	grpc_client "customer/internal/grpc"
 	"customer/internal/logger"
 	"customer/internal/utils"
@@ -61,6 +62,11 @@ func UpdateFlight(input *ent.UpdateFlightInput, id int, cxt context.Context) (*p
 	updateFlightInput, err := ConvertUpdateFlightInput(input, id, cxt)
 	if updateFlightInput == nil {
 		return nil, err
+	}
+	if updateFlightInput.Status == "CANCELLED" {
+		booking.CancelBookingWithFlightId(&pb.CancelBookingWithFlightIdInput{
+			FlightId: int32(id),
+		})
 	}
 	// connect gRPC server
 	resp, err := GetFlightGRPCClient().client.UpdateFlight(context.Background(), updateFlightInput)

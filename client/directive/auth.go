@@ -13,7 +13,6 @@ func Auth(ctx context.Context, obj interface{}, next graphql.Resolver) (interfac
 	if tokenData == nil {
 		return nil, utils.WrapGQLUnauthorizedError(ctx)
 	}
-
 	return next(ctx)
 }
 

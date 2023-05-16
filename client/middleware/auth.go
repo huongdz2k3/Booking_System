@@ -11,7 +11,8 @@ type authString string
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		auth := c.Request.Header.Get("Authorization")
+
+		auth := c.GetHeader("Authorization")
 
 		if auth == "" {
 			c.Next()

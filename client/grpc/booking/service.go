@@ -123,3 +123,12 @@ func GetBookingsHistory(input *ent.PaginateInput, customerId int) (*pb.GetBookin
 	}
 	return resp, nil
 }
+
+func CancelBookingWithFlightId(input *pb.CancelBookingWithFlightIdInput) (*pb.Empty, error) {
+	// connect gRPC server
+	resp, err := GetBookingGRPCClient().client.CancelBookingWithFlightId(context.Background(), input)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

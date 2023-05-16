@@ -123,6 +123,14 @@ func (s *BookingService) CountBookingsByStatus(ctx context.Context, input *pb.Co
 	}, nil
 }
 
+func (s *BookingService) CancelBookingWithFlightId(ctx context.Context, input *pb.CancelBookingWithFlightIdInput) (*pb.Empty, error) {
+	_, err := s.client.Booking.Update().Where(booking.FlightID(int(input.GetFlightId()))).SetStatus(booking.StatusCANCEL).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Empty{}, nil
+}
+
 func NewBookingService(client *ent.Client) *BookingService {
 	return &BookingService{
 		client: client,

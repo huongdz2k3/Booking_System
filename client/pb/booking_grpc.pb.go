@@ -28,6 +28,7 @@ type BookingServiceClient interface {
 	GetBookingsHistory(ctx context.Context, in *GetBookingsHistoryInput, opts ...grpc.CallOption) (*GetBookingsHistoryResponse, error)
 	SearchBooking(ctx context.Context, in *SearchBookingInput, opts ...grpc.CallOption) (*Booking, error)
 	CountBookingsByStatus(ctx context.Context, in *CountBookingsByStatusInput, opts ...grpc.CallOption) (*CountBookingsByStatusResponse, error)
+	CancelBookingWithFlightId(ctx context.Context, in *CancelBookingWithFlightIdInput, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type bookingServiceClient struct {
@@ -92,6 +93,15 @@ func (c *bookingServiceClient) CountBookingsByStatus(ctx context.Context, in *Co
 	return out, nil
 }
 
+func (c *bookingServiceClient) CancelBookingWithFlightId(ctx context.Context, in *CancelBookingWithFlightIdInput, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/proto.BookingService/CancelBookingWithFlightId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BookingServiceServer is the server API for BookingService service.
 // All implementations must embed UnimplementedBookingServiceServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type BookingServiceServer interface {
 	GetBookingsHistory(context.Context, *GetBookingsHistoryInput) (*GetBookingsHistoryResponse, error)
 	SearchBooking(context.Context, *SearchBookingInput) (*Booking, error)
 	CountBookingsByStatus(context.Context, *CountBookingsByStatusInput) (*CountBookingsByStatusResponse, error)
+	CancelBookingWithFlightId(context.Context, *CancelBookingWithFlightIdInput) (*Empty, error)
 	mustEmbedUnimplementedBookingServiceServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedBookingServiceServer) SearchBooking(context.Context, *SearchB
 }
 func (UnimplementedBookingServiceServer) CountBookingsByStatus(context.Context, *CountBookingsByStatusInput) (*CountBookingsByStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CountBookingsByStatus not implemented")
+}
+func (UnimplementedBookingServiceServer) CancelBookingWithFlightId(context.Context, *CancelBookingWithFlightIdInput) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelBookingWithFlightId not implemented")
 }
 func (UnimplementedBookingServiceServer) mustEmbedUnimplementedBookingServiceServer() {}
 
@@ -248,6 +262,24 @@ func _BookingService_CountBookingsByStatus_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BookingService_CancelBookingWithFlightId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelBookingWithFlightIdInput)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).CancelBookingWithFlightId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.BookingService/CancelBookingWithFlightId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).CancelBookingWithFlightId(ctx, req.(*CancelBookingWithFlightIdInput))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BookingService_ServiceDesc is the grpc.ServiceDesc for BookingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +310,10 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CountBookingsByStatus",
 			Handler:    _BookingService_CountBookingsByStatus_Handler,
+		},
+		{
+			MethodName: "CancelBookingWithFlightId",
+			Handler:    _BookingService_CancelBookingWithFlightId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
