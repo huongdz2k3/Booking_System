@@ -1,0 +1,75 @@
+
+enum BookingStatus @goModel(model: "customer/ent/booking.Status") {
+    SUCCESS
+    CANCEL
+    PROCESS
+}
+
+# Booking
+type Booking implements Node {
+    id: ID!
+    name: String!
+    customer_name: String!
+    customer_id: ID!
+    phone_number: String!
+    dob: String!
+    email: String!
+    license_id: String!
+    address: String!
+    flight: Flight!
+    booking_date: String!
+    status: BookingStatus!
+    booking_code: String!
+}
+
+type BookingHistoryResponse{
+    bookings: [Booking!]!
+    paginationInfo: PaginationInfo!
+}
+
+input CreateBookingInput {
+    customer_name: String!
+    phone_number: String!
+    dob: String!
+    email: String!
+    license_id: String!
+    address: String!
+    flight_id: Int!
+}
+
+input ViewBookingInput{
+    booking_code: String!
+    email: String!
+    license_id: String!
+}
+
+input CancelBookingInput{
+    booking_code: String!
+    email: String!
+    license_id: String!
+}
+
+type BookingOps{
+    #Booking Service
+    """ Create Booking """
+    CreateBooking(input: CreateBookingInput!): Booking! @goField(forceResolver: true)
+    """ Cancel Booking """
+    CancelBooking(input: CancelBookingInput!): Booking! @goField(forceResolver: true)
+}
+
+type BookingQuery{
+    """ Get Booking History """
+    ViewBooking(input : ViewBookingInput!): Booking! @goField(forceResolver: true)
+    """ Get Booking History """
+    GetBookingsHistory(input: PaginateInput) : BookingHistoryResponse! @auth @hasRole(roles: [ADMIN , SUBSCRIBER]) @goField(forceResolver: true)
+}
+
+
+extend type Query {
+    """ The booking field represents the queries that can be performed on a booking. """
+   BookingQuery: BookingQuery! @goField(forceResolver: true , name: "booking_query")
+}
+extend type Mutation {
+    """ The booking field represents the operations that can be performed on a booking. """
+    BookingOps: BookingOps! @goField(forceResolver: true , name: "booking_ops")
+}

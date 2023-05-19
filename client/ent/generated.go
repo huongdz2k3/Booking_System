@@ -11,6 +11,13 @@ type BookingHistoryResponse struct {
 	PaginationInfo *PaginationInfo `json:"paginationInfo"`
 }
 
+type BookingOps struct {
+	//  Create Booking
+	CreateBooking *Booking `json:"CreateBooking"`
+	//  Cancel Booking
+	CancelBooking *Booking `json:"CancelBooking"`
+}
+
 type CancelBookingInput struct {
 	BookingCode string `json:"booking_code"`
 	Email       string `json:"email"`
@@ -31,6 +38,26 @@ type CreateBookingInput struct {
 	LicenseID    string `json:"license_id"`
 	Address      string `json:"address"`
 	FlightID     int    `json:"flight_id"`
+}
+
+type CustomerOps struct {
+	//  register
+	Register *Jwt `json:"Register"`
+	//  login
+	Login *Jwt `json:"Login"`
+	//  update
+	Update *Customer `json:"Update"`
+	//  change password
+	ChangePassword string `json:"ChangePassword"`
+	//  update role
+	UpdateRole *Customer `json:"UpdateRole"`
+}
+
+type FlightOps struct {
+	//  create flight
+	CreateFlight *Flight `json:"CreateFlight"`
+	//  update flight
+	UpdateFlight *Flight `json:"UpdateFlight"`
 }
 
 type Jwt struct {
@@ -55,6 +82,7 @@ type PaginationInfo struct {
 	TotalRecords *int `json:"totalRecords,omitempty"`
 }
 
+// The User type represents a user of the application.
 type RegisterInput struct {
 	Name             string `json:"name"`
 	PhoneNumber      string `json:"phoneNumber"`
@@ -66,13 +94,12 @@ type RegisterInput struct {
 }
 
 type SearchFlightInput struct {
-	From       string      `json:"from"`
-	To         string      `json:"to"`
-	Type       flight.Type `json:"type"`
-	ReturnDate string      `json:"return_date"`
-	DepartDate string      `json:"depart_date"`
-	Size       int         `json:"size"`
-	Page       int         `json:"page"`
+	From          string         `json:"from"`
+	To            string         `json:"to"`
+	Type          flight.Type    `json:"type"`
+	ReturnDate    string         `json:"return_date"`
+	DepartDate    string         `json:"depart_date"`
+	PaginateInput *PaginateInput `json:"paginate_input"`
 }
 
 type SearchFlightResponse struct {

@@ -1,0 +1,83 @@
+"""The User type represents a user of the application."""
+
+#Customer Service
+input RegisterInput {
+    name: String!
+    phoneNumber: String!
+    email: String!
+    licenseID: String!
+    address: String!
+    membershipNumber: Int
+    password: String!
+}
+
+input UpdateCustomerInput {
+    name: String!
+    phoneNumber: String!
+    email: String!
+    licenseID: String!
+    address: String!
+    membershipNumber: Int
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+input ChangePasswordInput {
+    oldPassword: String!
+    newPassword: String!
+    confirmPassword: String!
+}
+
+type Customer implements Node {
+    id: ID!
+    name: String!
+    phoneNumber: String!
+    email: String!
+    licenseID: String!
+    address: String!
+    membershipNumber: Int
+    role: CustomerRole!
+}
+
+enum CustomerRole @goModel(model: "customer/ent/customer.Role") {
+    SUBSCRIBER
+    ADMIN
+}
+
+#Token
+type JWT {
+    token: String!
+    tokenType: String!
+}
+
+type CustomerOps {
+    """ register """
+    Register(input: RegisterInput!): JWT! @goField(forceResolver: true)
+    """ login """
+    Login(input: LoginInput!): JWT! @goField(forceResolver: true)
+    """ update """
+    Update(id: ID!, input: UpdateCustomerInput!): Customer!
+    @auth
+    @hasRole(roles: SUBSCRIBER)
+    @goField(forceResolver: true)
+    """ change password """
+    ChangePassword(id: ID!, input: ChangePasswordInput!): String!
+    @auth
+    @hasRole(roles: SUBSCRIBER)
+    @goField(forceResolver: true)
+    """ update role """
+    UpdateRole(id: ID!, input: CustomerRole!): Customer!
+    @auth
+    @hasRole(roles: ADMIN)
+    @goField(forceResolver: true)
+}
+
+extend type Mutation {
+    """ The customer field represents the operations that can be performed on a customer. """
+   CustomerOps: CustomerOps! @goField(forceResolver: true)
+}
+
+

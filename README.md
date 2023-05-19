@@ -45,7 +45,7 @@ This project is an example for use Golang write GraphQl + gRPC , microservice pa
 #### How to test
 
 - You can access
-    - Backend via http://localhost:8000 (GraphQL Playground) and http://localhost:8000/graphql (GraphQL Server)
+    - Backend via http://localhost:8080 (GraphQL Playground) and http://localhost:8080/graphql (GraphQL Server)
     - User with role ADMIN will be created while running docker-compose
       - You can use account with role Admin to fully access
         - username: `admin`

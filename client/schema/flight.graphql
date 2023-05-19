@@ -1,0 +1,91 @@
+#Flight Service
+type Flight implements Node {
+    id: ID!
+    name: String!
+    from: String!
+    to: String!
+    depart_time: String!
+    depart_date: String!
+    return_date: String
+    status: FlightStatus!
+    available_slots: Int!
+    flight_plane: String!
+    type: FlightType!
+}
+
+input CreateFlightInput {
+    name: String!
+    from: String!
+    to: String!
+    type: FlightType!
+    return_date: String
+    depart_time: String!
+    depart_date: String!
+    available_slots: Int!
+    flight_plane: String!
+    status: FlightStatus!
+}
+
+input UpdateFlightInput {
+    name: String!
+    from: String!
+    to: String!
+    depart_time: String!
+    depart_date: String!
+    type: FlightType!
+    return_date: String!
+    status: FlightStatus!
+    available_slots: Int!
+    flight_plane: String!
+}
+
+input SearchFlightInput {
+    from: String!
+    to: String!
+    type: FlightType!
+    return_date: String!
+    depart_date: String!
+    paginate_input: PaginateInput!
+}
+
+type SearchFlightResponse {
+    flights: [Flight!]!
+    paginationInfo: PaginationInfo!
+}
+
+enum FlightStatus @goModel(model: "customer/ent/flight.Status") {
+    ONTIME
+    DELAYED
+    CANCELLED
+    SCHEDULED
+}
+
+enum FlightType @goModel(model: "customer/ent/flight.Type") {
+    ONE_WAY
+    RETURN_TICKET
+}
+
+type FlightOps{
+    """ create flight """
+    CreateFlight(input: CreateFlightInput!): Flight! @auth @hasRole(roles: ADMIN) @goField(forceResolver: true)
+    """ update flight """
+    UpdateFlight(id: ID!, input: UpdateFlightInput!): Flight!
+    @auth
+    @hasRole(roles: ADMIN)
+    @goField(forceResolver: true)
+}
+
+type FlightQuery{
+    """ search flight """
+    SearchFlight(input: SearchFlightInput!): SearchFlightResponse! @goField(forceResolver: true)
+}
+
+type Query {
+    """ The flight field represents the queries that can be performed on a flight. """
+    FlightQuery: FlightQuery! @goField(forceResolver: true,name: "flight_query")
+}
+type Mutation {
+    #Flight Service
+    """ The flight field represents the operations that can be performed on a flight. """
+    FlightOps: FlightOps! @goField(forceResolver: true ,name: "flight_ops")
+}

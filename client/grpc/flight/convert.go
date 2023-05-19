@@ -86,8 +86,8 @@ func ConvertSearchFlightInput(input *ent.SearchFlightInput) (*flight2.QueryFligh
 		To:         input.To,
 		DepartDate: timestamppb.New(dateConverted),
 		ReturnDate: timestamppb.New(returnConverted),
-		Size:       int32(input.Size),
-		Page:       int32(input.Page),
+		Size:       int32(input.PaginateInput.Size),
+		Page:       int32(input.PaginateInput.Page),
 		Type:       input.Type.String(),
 	}
 	return &queryFlightInput, nil

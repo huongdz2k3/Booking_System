@@ -8,6 +8,7 @@ import (
 	"customer-service/pb"
 	"customer-service/tool"
 	"customer-service/validation"
+	"fmt"
 	"time"
 )
 
@@ -90,10 +91,14 @@ func (svc *CustomerService) Update(ctx context.Context, req *pb.UpdateCustomerIn
 	}
 
 	u, err := svc.client.Customer.UpdateOneID(int(req.GetId())).SetName(req.GetName()).SetEmail(req.GetEmail()).SetPhoneNumber(req.GetPhoneNumber()).SetAddress(req.GetAddress()).SetUpdateAt(time.Now()).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if req.MembershipNumber != nil {
 		membershipNumber := int(req.GetMembershipNumber())
-		u.MembershipNumber = &membershipNumber
-		u.Update().Save(ctx)
+
+		u.Update().SetMembershipNumber(membershipNumber).Save(ctx)
+		fmt.Println(u.MembershipNumber)
 	}
 	if err != nil {
 		return nil, err

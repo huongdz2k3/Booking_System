@@ -2,60 +2,17 @@ directive @goField(
   forceResolver: Boolean
   name: String
 ) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @goModel(
   model: String
   models: [String!]
 ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
 directive @auth on FIELD_DEFINITION
 directive @hasRole(roles: [CustomerRole!]) on FIELD_DEFINITION
 
-#Customer Service
-input RegisterInput {
-  name: String!
-  phoneNumber: String!
-  email: String!
-  licenseID: String!
-  address: String!
-  membershipNumber: Int
-  password: String!
-}
 
-input UpdateCustomerInput {
-  name: String
-  phoneNumber: String
-  email: String
-  licenseID: String
-  address: String
-  membershipNumber: Int
-}
 
-input LoginInput {
-  email: String!
-  password: String!
-}
-
-input ChangePasswordInput {
-  oldPassword: String!
-  newPassword: String!
-  confirmPassword: String!
-}
-
-scalar Cursor
-type Customer implements Node {
-  id: ID!
-  name: String!
-  phoneNumber: String!
-  email: String!
-  licenseID: String!
-  address: String!
-  membershipNumber: Int
-  role: CustomerRole!
-}
-
-enum CustomerRole @goModel(model: "customer/ent/customer.Role") {
-  SUBSCRIBER
-  ADMIN
-}
 """
 An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
@@ -66,41 +23,7 @@ interface Node @goModel(model: "customer/ent.Noder") {
   """
   id: ID!
 }
-"""
-Possible directions in which to order a list of items when provided an `orderBy` argument.
-"""
-enum OrderDirection {
-  """
-  Specifies an ascending order for a given `orderBy` argument.
-  """
-  ASC
-  """
-  Specifies a descending order for a given `orderBy` argument.
-  """
-  DESC
-}
-"""
-Information about pagination in a connection.
-https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
-"""
-type PageInfo {
-  """
-  When paginating forwards, are there more items?
-  """
-  hasNextPage: Boolean!
-  """
-  When paginating backwards, are there more items?
-  """
-  hasPreviousPage: Boolean!
-  """
-  When paginating backwards, the cursor to continue.
-  """
-  startCursor: Cursor
-  """
-  When paginating forwards, the cursor to continue.
-  """
-  endCursor: Cursor
-}
+
 input PaginateInput{
     size: Int!
     page: Int!
@@ -111,162 +34,6 @@ type PaginationInfo {
   page: Int
   totalPages: Int
   totalRecords: Int
-}
-
-#Token
-type JWT {
-  token: String!
-  tokenType: String!
-}
-
-#Flight Service
-type Flight implements Node {
-  id: ID!
-  name: String!
-  from: String!
-  to: String!
-  depart_time: String!
-  depart_date: String!
-  return_date: String
-  status: FlightStatus!
-  available_slots: Int!
-  flight_plane: String!
-  type: FlightType!
-}
-
-input CreateFlightInput {
-  name: String!
-  from: String!
-  to: String!
-  type: FlightType!
-  return_date: String
-  depart_time: String!
-  depart_date: String!
-  available_slots: Int!
-  flight_plane: String!
-  status: FlightStatus!
-}
-
-input UpdateFlightInput {
-  name: String
-  from: String
-  to: String
-  depart_time: String
-  depart_date: String
-  type: FlightType
-  return_date: String
-  status: FlightStatus
-  available_slots: Int
-  flight_plane: String
-}
-
-input SearchFlightInput {
-  from: String!
-  to: String!
-  type: FlightType!
-  return_date: String!
-  depart_date: String!
-  size: Int!
-  page: Int!
-}
-
-type SearchFlightResponse {
-  flights: [Flight!]!
-  paginationInfo: PaginationInfo!
-}
-
-enum FlightStatus @goModel(model: "customer/ent/flight.Status") {
-  ONTIME
-  DELAYED
-  CANCELLED
-  SCHEDULED
-}
-
-enum FlightType @goModel(model: "customer/ent/flight.Type") {
-  ONE_WAY
-  RETURN_TICKET
-}
-
-enum BookingStatus @goModel(model: "customer/ent/booking.Status") {
-  SUCCESS
-  CANCEL
-  PROCESS
-}
-
-# Booking
-type Booking implements Node {
-  id: ID!
-  name: String!
-  customer_name: String!
-  customer_id: ID!
-  phone_number: String!
-  dob: String!
-  email: String!
-  license_id: String!
-  address: String!
-  flight: Flight!
-  booking_date: String!
-  status: BookingStatus!
-  booking_code: String!
-}
-
-type BookingHistoryResponse{
-  bookings: [Booking!]!
-  paginationInfo: PaginationInfo!
-}
-
-input CreateBookingInput {
-  customer_name: String!
-  phone_number: String!
-  dob: String!
-  email: String!
-  license_id: String!
-  address: String!
-  flight_id: Int!
-}
-
-input ViewBookingInput{
-    booking_code: String!
-    email: String!
-    license_id: String!
-}
-
-input CancelBookingInput{
-    booking_code: String!
-    email: String!
-    license_id: String!
-}
-
-type Query {
-  customers: [Customer!]!
-  SearchFlight(input: SearchFlightInput!): SearchFlightResponse!
-  ViewBooking(input : ViewBookingInput!): Booking!
-  GetBookingsHistory(input: PaginateInput) : BookingHistoryResponse! @auth @hasRole(roles: [ADMIN , SUBSCRIBER])
-}
-
-type Mutation {
-  #Customer Service
-  Register(input: RegisterInput!): JWT!
-  Login(input: LoginInput!): JWT!
-  Update(id: ID!, input: UpdateCustomerInput!): Customer!
-    @auth
-    @hasRole(roles: SUBSCRIBER)
-  ChangePassword(id: ID!, input: ChangePasswordInput!): String!
-    @auth
-    @hasRole(roles: SUBSCRIBER)
-  UpdateRole(id: ID!, input: CustomerRole!): Customer!
-    @auth
-    @hasRole(roles: ADMIN)
-
-  #Flight Service
-  CreateFlight(input: CreateFlightInput!): Flight! @auth @hasRole(roles: ADMIN)
-  UpdateFlight(id: ID!, input: UpdateFlightInput!): Flight!
-    @auth
-    @hasRole(roles: ADMIN)
-
-  #Booking Service
-  CreateBooking(input: CreateBookingInput!): Booking!
-  CancelBooking(input: CancelBookingInput!): Booking!
 }
 """
 The builtin Time type

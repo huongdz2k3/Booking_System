@@ -112,14 +112,14 @@ func (s *FlightService) SearchFlights(ctx context.Context, input *pb.QueryFlight
 				flight.And(
 					flight.From(input.From),
 					flight.To(input.To),
-					flight.DepartDate(ConvertProtoTimestampToTime(input.DepartDate)),
+					flight.DepartDateGTE(ConvertProtoTimestampToTime(input.DepartDate)),
 					flight.StatusIn(flight.StatusSCHEDULED),
 					flight.TypeEQ(flightTypeQuery),
 				),
 				flight.And(
 					flight.From(input.To),
 					flight.To(input.From),
-					flight.DepartDate(ConvertProtoTimestampToTime(input.ReturnDate)),
+					flight.DepartDateLTE(ConvertProtoTimestampToTime(input.ReturnDate)),
 					flight.StatusIn(flight.StatusSCHEDULED),
 					flight.TypeEQ(flightTypeQuery),
 				),
